@@ -1,0 +1,154 @@
+body{
+    background-color:#e9ebee;
+}
+
+
+.searchbar {
+
+    margin-bottom: auto;
+    margin-top: auto;
+    height: 60px;
+    background-color: #585c64;
+    border-radius: 30px;
+    padding: 10px;
+  }
+
+  .search_input{
+  color: white;
+  border: 0;
+  outline: 0;
+  background: none;
+  width: 0;
+  caret-color:transparent;
+  line-height: 40px;
+  transition: width 0.4s linear;
+  padding: 0 10px;
+  width: 450px;
+  caret-color:red;
+  transition: width 0.4s linear;
+  }
+
+
+
+  .searchbar:hover > .search_icon{
+  background: white;
+  color: #e74c3c;
+  }
+
+  .search_icon{
+  height: 40px;
+  width: 40px;
+  float: right;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color:white;
+  }
+
+
+.nav_submit{
+  margin-bottom: auto;
+  margin-top: auto;
+  /* height: 60px; */
+  background-color: #585c64;
+  border-radius: 30px;
+}
+
+
+
+.list:first-of-type{
+border-radius: .25rem;
+cursor: pointer;
+background: none;
+border: 0;
+color: #ddd;
+size: 28px;
+font-size: 29px;
+    margin-right: 30px;
+}
+.list{
+        margin-right: 30px;
+}
+.notification{
+background: none;
+color: #ddd;
+border: none;
+cursor: pointer;
+}
+
+.notification-content{
+left: auto;
+right: 0;
+margin-right: -75px;
+margin-top: 14px;
+}
+#searchbar {
+      margin-right: 30px;
+  }
+.logout{
+background: none;
+border: none;
+cursor: pointer;
+}
+.options{
+  left: auto;
+  right: 0;
+}
+
+.search_input {
+    color: white;
+    border: 0;
+    outline: 0;
+    background: none;
+    width: 0;
+    caret-color: transparent;
+    line-height: 40px;
+    transition: width 0.4s linear;
+    padding: 0 10px;
+    width: 450px;
+    caret-color: red;
+    transition: width 0.4s linear;
+    height: 30px;
+    margin-top: -5px;
+}
+#searchbar {
+    margin-right: 30px;
+    height: 40px;
+}
+
+.search_icon {
+    height: 30px;
+    width: 30px;
+    float: right;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    color: white;
+    margin-top: -4px;
+    margin-right: 5px;
+}
+
+.notification-content {
+    left: auto;
+    right: 0;
+    margin-right: -75px;
+    margin-top: 8px;
+}
+.list span:first-of-type {
+  font-size: 25px;
+}
+.btn-group>.btn:first-child {
+    height: 32px;
+    margin-left: 0;
+    margin-top: 2px;
+}
+
+
+.nav_submit {
+margin-bottom: auto;
+margin-top: auto;
+background-color: #585c64;
+border-radius: 30px;
+}

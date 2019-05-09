@@ -1,0 +1,11 @@
+*.ipynb
+extra_files/
+.ipynb_checkpoints/
+__pycache__/
+*/__pycache__/
+*.dump
+*.json
+*.sqlite3
+*.db
+*.csv
+*.sql
