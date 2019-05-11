@@ -9,3 +9,7 @@ __pycache__/
 *.db
 *.csv
 *.sql
+staticfiles/media/Youtube/*.mp3
+S3_KEYS_SET.py
+main/forms.py
+main/S3Operations.py
