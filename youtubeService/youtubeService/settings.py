@@ -25,9 +25,19 @@ SECRET_KEY = '21itija)lvu33=%%4$nr8$9%av&2vum0f!o7v8t5#^7d#*8fn!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+website_name=" youtube-service"
+logging_type = "file" # it can be "cmd" or "file"
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    'localhost',
+    "127.0.0.1",
+     "0.0.0.0",
+     "{}.herokuapp.com".format(website_name),
+     "herokuapp.com",
+     "https://{}.herokuapp.com/".format(website_name),
+     "https://herokuapp.com/",
+     ".herokuapp.com"
+]
 
 # Application definition
 
@@ -52,6 +62,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ]
 
 ROOT_URLCONF = 'youtubeService.urls'
@@ -103,6 +115,72 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+
+if logging_type is "file":
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': 'mysite.log',
+                'formatter': 'verbose'
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers':['file'],
+                'propagate': True,
+                'level':'DEBUG',
+            },
+            'MYAPP': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+            },
+        }
+    }
+elif logging_type is "cmd":
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+        },
+        'handlers': {
+            'console': {
+                'level': 'NOTSET',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            }
+        },
+        'loggers': {
+            '': {
+                'handlers': ['console'],
+                'level': 'NOTSET',
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': 'ERROR'
+            }
+        }
+    }
+else:
+    pass
 
 
 # Internationalization

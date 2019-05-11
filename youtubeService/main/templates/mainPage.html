@@ -17,7 +17,7 @@
 
 {% for record in audioRecords %}
   <audio controls>
-    <source src="{{MEDIA_URL}}/{{record.file}}" type="audio/mp3">
+    <source src="{{MEDIA_URL}}{{record.file}}" type="audio/mp3">
   </audio>
 {% endfor %}
 
