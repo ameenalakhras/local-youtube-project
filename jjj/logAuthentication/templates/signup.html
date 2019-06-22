@@ -1,0 +1,47 @@
+{% load static%}
+
+<link rel="stylesheet" href="{% static 'css/signup.css'%}">
+
+<div class="container" id="wrap">
+  <form action="{% url 'create_user' %}" method="post" accept-charset="utf-8" class="form" role="form">
+    {% csrf_token %}
+
+   <legend>Sign Up</legend>
+
+    <div class="row">
+      <input type="text" name="firstname" value="" class="form-control input-lg" placeholder="First Name" required="" />
+    </div>
+
+    <div class="row">
+      <input type="text" name="lastname" value="" class="form-control input-lg" placeholder="Last Name" required="" />
+    </div>
+
+
+
+    <div class="row">
+      <input type="text" name="username" value="" class="form-control input-lg" placeholder="username" required="" />
+    </div>
+
+    <div class="row">
+      <input type="email" name="email" value="" class="form-control input-lg" placeholder="Your Email" required="" />
+    </div>
+
+    <div class="row">
+      <input type="password" name="password" value="" class="form-control input-lg" placeholder="Password" required="" />
+    </div>
+
+    <div class="row">
+      <input type="password" name="password_confirmation" value="" class="form-control input-lg" placeholder="Confirm Password"  required=""/>
+    </div>
+
+    <button class="btn btn-lg btn-primary btn-block signup-btn" type="submit">
+      Create my account
+    </button>
+
+  </form>
+  <div class="mt-4 text-center">
+
+  Have an account?
+   <a href="javascript:void(0);" onClick="$('#signupbox').hide(); $('#loginbox').show()"> log in</a>
+  </div>
+</div>

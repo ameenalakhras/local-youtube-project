@@ -1,0 +1,17 @@
+*.ipynb
+extra_files/
+.ipynb_checkpoints/
+__pycache__/
+*/__pycache__/
+*.dump
+*.json
+*.sqlite3
+*.db
+*.csv
+*.sql
+staticfiles/media/Youtube/*.*
+S3_KEYS_SET.py
+main/S3Operations.py
+youtube-mp3-generator/
+mysite.log
+staticfiles/media/*

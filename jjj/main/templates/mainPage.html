@@ -1,0 +1,119 @@
+
+{% extends "base.html" %}
+{% load static%}
+
+{% block title %}Main page{% endblock %}
+
+{% block content %}
+
+
+  <div class="container-fluid">
+
+
+    <br>
+    <div class="row">
+      <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
+        {% csrf_token %}
+        {{ UploadUrl }}
+        <input type="submit" name="" value="download video">
+      </form>
+    </div>
+    <br>
+    <div class="row">
+      {% for record in audioRecords %}
+      <div class="col-md-6">
+        {% if forloop.first%}
+          <video name='demo' controls autoplay  width='100%' height='80%'>
+        {% else %}
+          <video name='demo' controls  width='100%' height='80%'>
+        {% endif %}
+        <!-- width='50%' height='40%' -->
+          <source src="{{MEDIA_URL}}{{record.file}}" type="video/mp4"></source>
+        </video>
+      </div>
+      {% endfor %}
+    </div>
+
+
+    <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe> -->
+    <!-- <div id='rg_embed_link_3988791' class='rg_embed_link' data-song-id='3988791'>Read <a href='https://genius.com/Sigrid-sucker-punch-lyrics'>“Sucker Punch” by Sigrid</a> on Genius</div> <script crossorigin src='//genius.com/songs/3988791/embed.js'></script> -->
+
+    <input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+
+
+    <script type="text/javascript">
+
+      var questionForm = $('#questionForm');
+
+      questionForm.submit(function (e) {
+
+        e.preventDefault();
+        var url = $("#downloadVideoUrl").attr("data-url");
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: questionForm.serialize(),
+            success: function (data) {
+              console.log(data.answer)
+            },
+            error: function (data) {
+                console.log('An error occurred.');
+                console.log(data.message);
+                console.log(data)
+            },
+        });
+      })
+
+
+    </script>
+
+
+
+
+
+    <style media="screen">
+      #progress-bar {
+      margin-top: 1em;
+    }
+    </style>
+
+    <!-- <div class="progress" id="progress-wrapper">
+      <button id="progress-bar-trigger">Run</button>
+      <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+      aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:40%">
+      </div>
+      <div id="progress-bar-message">Waiting for progress to start...</div>
+        Waiting for progress to start...
+      </div> -->
+
+    <div id="progress-wrapper">
+      <button id="progress-bar-trigger">Run</button>
+      <div id="progress-bar" style="background-color: blue; width: 40%;">&nbsp;</div>
+      <div id="progress-bar-message">Waiting for progress to start...</div>
+    </div>
+    <script type="text/javascript">
+      function updateProgress(progressBarElement, progressBarMessageElement, progress) {
+      progressBarElement.style.width = progress.percent + "%";
+      progressBarMessageElement.innerHTML = progress.current + ' of ' + progress.total + ' processed.';
+    }
+
+    var trigger = document.getElementById('progress-bar-trigger');
+    trigger.addEventListener('click', function(e) {
+      var bar = document.getElementById("progress-bar");
+      var barMessage = document.getElementById("progress-bar-message");
+      for (var i = 0; i < 11; i++) {
+        setTimeout(updateProgress, 500 * i, bar, barMessage, {
+          percent: 10 * i,
+          current: 10 * i,
+          total: 100
+        })
+      }
+    })
+
+    </script>
+
+
+  </div>
+
+{% endblock %}
