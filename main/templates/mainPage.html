@@ -5,41 +5,111 @@
 {% block title %}Main page{% endblock %}
 
 {% block content %}
+<input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
 
 
   <div class="container-fluid">
 
-
     <br>
     <div class="row">
-      <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
-        {% csrf_token %}
-        {{ UploadUrl }}
-        <input type="submit" name="" value="download video">
-      </form>
+      <!-- center the form -->
+        <div class="d-flex justify-content-center align-items-center container">
+          <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
+            {% csrf_token %}
+            {{ UploadUrl }}
+            <input type="submit" name="" value="download video">
+          </form>
+        </div>
+
     </div>
     <br>
-    <div class="row">
-      {% for record in audioRecords %}
+    <div class="row" id="all_videos">
       <div class="col-md-6">
-        {% if forloop.first%}
-          <video name='demo' controls autoplay  width='100%' height='80%'>
-        {% else %}
-          <video name='demo' controls  width='100%' height='80%'>
-        {% endif %}
-        <!-- width='50%' height='40%' -->
-          <source src="{{MEDIA_URL}}{{record.file}}" type="video/mp4"></source>
+          <video  id="videoPlayer" controls autoplay  width='100%' height='80%'>
+          <source src="{{videos_source.0}}" type="video/mp4"></source>
         </video>
       </div>
-      {% endfor %}
     </div>
 
+    <button type="button" onclick="previous()" disabled  id="previousVideoButton">previous Song</button>
+    <button type="button" onclick="next()" {% if videos_source|length <= 1 %}disabled{% endif %} id="nextVideoButton">Next Song</button>
 
     <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe> -->
     <!-- <div id='rg_embed_link_3988791' class='rg_embed_link' data-song-id='3988791'>Read <a href='https://genius.com/Sigrid-sucker-punch-lyrics'>“Sucker Punch” by Sigrid</a> on Genius</div> <script crossorigin src='//genius.com/songs/3988791/embed.js'></script> -->
 
-    <input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+    <script type="text/javascript">
 
+      videos_source_list = {{ videos_source|safe }};
+      videos_length =  videos_source_list.length
+      last_index = videos_length - 1
+      first_index = 0
+
+      video_player = document.getElementById("videoPlayer")
+      nextVideoButton = document.getElementById("nextVideoButton")
+      previousVideoButton = document.getElementById("previousVideoButton")
+
+      current_index = 0
+      function next()  {
+        current_index = current_index + 1
+
+        if(current_index < last_index){
+          video_player.src= videos_source_list[current_index];
+        }
+
+        else if(current_index == last_index){
+          video_player.src= videos_source_list[current_index];
+        }
+
+        else if(current_index > last_index){
+          notify("you reached the last video !", false)
+        }
+        enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
+      }
+
+
+      function previous(){
+        current_index = current_index - 1
+
+        if(current_index < first_index){
+          notify("you reached the last video !", false)
+        }
+
+        else if(current_index == first_index){
+          video_player.src= videos_source_list[current_index];
+        }
+
+        else if(current_index > first_index){
+          video_player.src= videos_source_list[current_index];
+        }
+        enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
+      }
+
+
+      function enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton){
+
+        if(current_index <= first_index){
+          previousVideoButton.disabled = true
+        }
+        else{
+          previousVideoButton.disabled = false
+        }
+
+        if(current_index >= last_index){
+          nextVideoButton.disabled = true
+        }
+        else{
+          nextVideoButton.disabled = false
+        }
+
+      }
+
+      //on video end
+      video_player.onended = function() {
+        next()
+      };
+
+
+    </script>
 
     <script type="text/javascript">
 
@@ -50,16 +120,18 @@
         e.preventDefault();
         var url = $("#downloadVideoUrl").attr("data-url");
 
+        notify("download request started ...", true)
+
         $.ajax({
             type: 'POST',
             url: url,
             data: questionForm.serialize(),
             success: function (data) {
-              console.log(data.answer)
+              notify(data.answer, true)
             },
             error: function (data) {
-                console.log('An error occurred.');
-                console.log(data.message);
+                notify('An error occurred :' + data.message, false);
+                console.log('An error occurred :' + data.message)
                 console.log(data)
             },
         });
@@ -77,15 +149,6 @@
       margin-top: 1em;
     }
     </style>
-
-    <!-- <div class="progress" id="progress-wrapper">
-      <button id="progress-bar-trigger">Run</button>
-      <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
-      aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:40%">
-      </div>
-      <div id="progress-bar-message">Waiting for progress to start...</div>
-        Waiting for progress to start...
-      </div> -->
 
     <div id="progress-wrapper">
       <button id="progress-bar-trigger">Run</button>

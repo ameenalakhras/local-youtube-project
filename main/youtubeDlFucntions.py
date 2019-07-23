@@ -5,6 +5,24 @@ from django.db.utils import IntegrityError
 from youtube_dl.utils import DownloadError
 from requests.exceptions import HTTPError
 import glob
+# import moviepy.editor as mpe
+from moviepy.editor import *
+
+def combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name):
+
+    videoclip = VideoFileClip(folderPath+video_file)
+    audioclip = AudioFileClip(folderPath+audio_file)
+
+    new_audioclip = CompositeAudioClip([audioclip])
+    videoclip.audio = new_audioclip
+
+    new_file_extention = "mp4"
+    new_file_path = f"{folderPath}{file_raw_name}.{new_file_extention}"
+    videoclip.write_videofile(new_file_path)
+
+    return new_file_path, new_file_extention
+
+
 
 
 class MyLogger(object):
@@ -51,10 +69,24 @@ def return_fileName_and_extention(folderPath, file_raw_name):
 
     if file_empty:
         raise ValueError("file Doesn't exist")
+    # if youtube_dl created two files instead of one (video file and audio file) ('webm' file and 'mp4' file)
     elif file_duplicated:
         print(f"file with path {pattern_match_files[0]} is duplicated\
          (maybe it exists in different formats **mp4, mkv, etc.)")
         file_exists = True
+        first_file = pattern_match_files[0]
+        second_file = pattern_match_files[1]
+
+        if firstfile.endswith(".mp4"):
+            video_file = firstfile
+            audio_file = second_file
+        else:
+            video_file = second_file
+            audio_file = first_file
+
+        file_name, file_extention = combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name)
+
+
     elif file_exists:
         file_full_path = pattern_match_files[0]
         file_name = file_full_path.split(folderPath)[1]
@@ -145,3 +177,42 @@ def catchSavingExcetions(new_record):
         errorMessage = "exception happened which is :\n" + str(e)
 
     return message, errorMessage
+
+def checkUrlType(text):
+    """ check if the inputted is a URL or a video ID """
+
+    if ("&list=" in text) and ("playlist" not in text):
+        text_type = "video_in_playlist"
+
+    elif ("youtube" in text) and ("watch?v" in text)  :
+        text_type = "video"
+
+    elif "playlist" in text:
+        text_type = "playlist" # &list=WL
+
+    elif "." not in text:
+        text_type = "video_id"
+
+    else:
+        raise ValueError("URL isn't valid, please make sure it's a youtube video url.")
+
+    return text_type
+
+def get_video_url_from_link(text):
+    """
+        checks the type of the link using checkUrlType then transforms it into a downloadable video url
+    """
+
+    video_type = checkUrlType(text)
+    if video_type is "video":
+        video_url = text
+    elif video_type is "video_in_playlist":
+        video_url = text.split("&list")[0]
+    elif video_type is "playlist":
+        pass
+    elif video_type is "video_id":
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+    else:
+        raise ValueError("video type isn't recognized")
+
+    return video_url

@@ -7,23 +7,24 @@ from .models import Audio
 from django.db.utils import IntegrityError
 from youtube_dl.utils import DownloadError
 from requests.exceptions import HTTPError
-from .youtubeDlFucntions import my_hook,MyLogger,createRecord, checkRecordExists, getYoutubeDlOptions, catchSavingExcetions
-from django.http import HttpResponse
+from .youtubeDlFucntions import my_hook,MyLogger,createRecord, checkRecordExists,\
+                                getYoutubeDlOptions, catchSavingExcetions,\
+                                checkUrlType
 from django.views.decorators.http import require_http_methods, require_GET
-from django.http import HttpResponseRedirect,JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 
 from .forms import UploadUrl as UploadVideoForm
-
 
 def mainPage(request):
     """
     the main page of the website
     """
     audioRecords = Audio.objects.all()
+    videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
     uploadForm = UploadVideoForm()
     context = {
-        "audioRecords":audioRecords,
-        "MEDIA_URL": settings.MEDIA_URL,
+        # "audioRecords":audioRecords,
+        "videos_source": videos_source,
         "UploadUrl": uploadForm,
 
     }
@@ -63,3 +64,16 @@ def browseVideos(request):
         "MEDIA_URL": settings.MEDIA_URL,
     }
     return render(request, template_name="browseVideos.html" ,context=context )
+
+def experimentFunction(request):
+    """ this function is for site experimntation and for feature preperations """
+    audioRecords = Audio.objects.all()
+    videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
+    uploadForm = UploadVideoForm()
+    context = {
+        # "audioRecords":audioRecords,
+        "videos_source": videos_source,
+        "UploadUrl": uploadForm,
+
+    }
+    return render(request, template_name="experimentPage.html" ,context=context )

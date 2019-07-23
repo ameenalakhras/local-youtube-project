@@ -8,5 +8,7 @@ from django.conf import settings
 urlpatterns = [
     path("", views.mainPage, name="mainPage"),
     path("downloadVideo", views.downloadVideo, name="downloadVideo"),
-    path("browseVideos/", views.browseVideos, name="browseVideos")
+    path("browseVideos/", views.browseVideos, name="browseVideos"),
+    path("experimentationPage/", views.experimentFunction, name="experimentPage"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
