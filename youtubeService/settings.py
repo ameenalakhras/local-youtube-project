@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from configparser import RawConfigParser
+config = RawConfigParser()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,8 +52,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "page404.apps.Page404Config",
     "logAuthentication.apps.LogauthenticationConfig",
-    "account_auth.apps.AccountAuthConfig",
     "main.apps.MainConfig",
+    "mail.apps.MailConfig",
+
 ]
 
 MIDDLEWARE = [
@@ -215,3 +218,17 @@ STATICFILES_DIRS = (
 )
 
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+
+config.read('youtubeService/settings.ini')
+
+SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
+DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
+
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = TIME_ZONE

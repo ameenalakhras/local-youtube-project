@@ -16,10 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from logAuthentication import urls as logAuthenticationUrls
-from main import urls as mainUrls
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include(logAuthenticationUrls)),
-    path("", include(mainUrls))
+    path("", include("logAuthentication.urls")),
+    path("", include("main.urls")),
 ]
