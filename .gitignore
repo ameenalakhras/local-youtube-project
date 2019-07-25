@@ -17,3 +17,4 @@ staticfiles/media/
 youtubeService/settings.ini
 staticfiles/
 venv/
+main/CustomtemplateFilters.py

@@ -226,6 +226,10 @@ config.read('youtubeService/settings.ini')
 SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
 
+S3_BUCKET = config.get('aws', 'S3_BUCKET')
+S3_KEY = config.get('aws', 'S3_KEY')
+S3_SECRET_ACCESS_KEY = config.get('aws', 'S3_SECRET_ACCESS_KEY')
+
 # CELERY_BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 # CELERY_ACCEPT_CONTENT = ['application/json']

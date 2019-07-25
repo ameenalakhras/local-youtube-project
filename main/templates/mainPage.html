@@ -5,12 +5,22 @@
 {% block title %}Main page{% endblock %}
 
 {% block content %}
+
+
+<style media="screen">
+      .img-max-width{
+        max-height: 80px;
+        min-height: 70px;
+      }
+</style>
 <input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
 
 
   <div class="container-fluid">
 
     <br>
+
+    <!-- download video form start -->
     <div class="row">
       <!-- center the form -->
         <div class="d-flex justify-content-center align-items-center container">
@@ -22,24 +32,122 @@
         </div>
 
     </div>
+    <!-- download video form end -->
+
     <br>
-    <div class="row" id="all_videos">
-      <div class="col-md-6">
-          <video  id="videoPlayer" controls autoplay  width='100%' height='80%'>
-          <source src="{{videos_source.0}}" type="video/mp4"></source>
-        </video>
+
+    <div class="container-fluid" id="all_videos">
+
+      <!-- video title -->
+      <p class="row justify-content-center" id="videoName">{{titles.0}}</p>
+
+      <div class="row">
+        <div class="col-md-2"></div>
+
+        <div class="col-md-6">
+
+          <!-- video and play tools  start  -->
+          <div class="container text-center my-1">
+
+            <!-- carousel start -->
+              <div id="recipeCarousel" class="carousel slide w-100" data-ride="carousel" style="interval: false">
+
+                  <div class="carousel-inner w-100" role="listbox">
+                    <!-- active thumbnails start -->
+                      <div class="carousel-item row no-gutters active">
+                        {% for thumbnail in thumbnail_urls %}
+                          {% if forloop.counter0 < 4 %}
+                            <div class="col-3 float-left">
+                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})">
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <!-- active thumbnails end -->
+
+                      <!-- non-active thumbnail start (the secondary thumbnails ) -->
+                      <div class="carousel-item row no-gutters">
+                        {% for thumbnail in thumbnail_urls %}
+                          {% if forloop.counter0 >= 4 %}
+
+                            {% if forloop.counter|divisibleby:4 %}
+                              </div>
+                              <div class="carousel-item row no-gutters">
+                            {% endif %}
+
+                            <div class="col-3 float-left">
+                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})">
+                            </div>
+                          {% endif %}
+
+                        {% endfor %}
+                      </div>
+                        <!-- non-active thumbnail end (the secondary thumbnails ) -->
+
+                    </div>
+                    <!-- carousel-inner end  -->
+
+                    <!-- carousel next and previous start  -->
+                    <a class="carousel-control-prev" href="#recipeCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+
+                    <a class="carousel-control-next" href="#recipeCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                    <!-- carousel next and previous end  -->
+
+                  </div>
+                  <!-- carousel end -->
+
+          </div>
+          <!-- video and play tools  end  -->
+
+          <video  id="videoPlayer" controls autoplay  width='100%' height='80%' poster="{{thumbnail_urls.0}}">
+            <source src="{{videos_source.0}}" type="video/mp4"></source>
+          </video>
+
+          <button type="button" onclick="previous()" disabled  id="previousVideoButton"> <i class="fas fa-arrow-circle-left"></i> previous Song</button>
+          <button type="button" onclick="next()" {% if videos_source|length <= 1 %}disabled{% endif %} id="nextVideoButton" style="float:right">Next Song <i class="fas fa-arrow-circle-right"></i></button>
+
+</div>
+<!-- col-md-6 end  -->
+
+
+        <div class="col-md-2" style="background-color:green"></div>
+        <div class="col-md-2"></div>
+
       </div>
     </div>
 
-    <button type="button" onclick="previous()" disabled  id="previousVideoButton">previous Song</button>
-    <button type="button" onclick="next()" {% if videos_source|length <= 1 %}disabled{% endif %} id="nextVideoButton">Next Song</button>
-
-    <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe> -->
-    <!-- <div id='rg_embed_link_3988791' class='rg_embed_link' data-song-id='3988791'>Read <a href='https://genius.com/Sigrid-sucker-punch-lyrics'>“Sucker Punch” by Sigrid</a> on Genius</div> <script crossorigin src='//genius.com/songs/3988791/embed.js'></script> -->
 
     <script type="text/javascript">
 
+      $(document).ready(function() {
+        $('#recipeCarousel').bind('mousewheel', function(e){
+          e.preventDefault();
+
+          if(e.originalEvent.wheelDelta /120 > 0) {
+            console.log('scrolling up !');
+             $("#recipeCarousel").carousel("next");
+          }
+          else{
+            console.log('scrolling down !');
+            $("#recipeCarousel").carousel("prev");
+          };
+        });
+      });
+
+
+    </script>
+    <script type="text/javascript">
+
       videos_source_list = {{ videos_source|safe }};
+      thumbnail_urls = {{ thumbnail_urls|safe }};
+      titles = {{ titles|safe }};
+
       videos_length =  videos_source_list.length
       last_index = videos_length - 1
       first_index = 0
@@ -47,19 +155,39 @@
       video_player = document.getElementById("videoPlayer")
       nextVideoButton = document.getElementById("nextVideoButton")
       previousVideoButton = document.getElementById("previousVideoButton")
-
+      video_name = document.getElementById("videoName")
       current_index = 0
+
+
+
+
+
+
+      function add_video_source_index(index){
+        video_player.src= videos_source_list[index];
+      }
+      function add_video_title(index){
+        video_name.innerHTML = titles[index]
+      }
+
+      function add_video_thumbnail(index){
+        video_player.poster = thumbnail_urls[index]
+      }
+
+      function play_song_from_thumbnail_image(index){
+        add_video_source_index(index)
+        add_video_title(index)
+        add_video_thumbnail(index)
+      }
+
       function next()  {
         current_index = current_index + 1
 
-        if(current_index < last_index){
-          video_player.src= videos_source_list[current_index];
+        if(current_index <= last_index){
+          add_video_source_index(current_index)
+          add_video_title(current_index)
+          add_video_thumbnail(current_index)
         }
-
-        else if(current_index == last_index){
-          video_player.src= videos_source_list[current_index];
-        }
-
         else if(current_index > last_index){
           notify("you reached the last video !", false)
         }
@@ -74,13 +202,12 @@
           notify("you reached the last video !", false)
         }
 
-        else if(current_index == first_index){
-          video_player.src= videos_source_list[current_index];
+        else if(current_index >= first_index){
+          add_video_source_index(current_index)
+          add_video_title(current_index)
+          add_video_thumbnail(current_index)
         }
 
-        else if(current_index > first_index){
-          video_player.src= videos_source_list[current_index];
-        }
         enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
       }
 
@@ -142,7 +269,7 @@
 
 
 
-
+<!--
 
     <style media="screen">
       #progress-bar {
@@ -177,6 +304,6 @@
     </script>
 
 
-  </div>
+  </div> -->
 
 {% endblock %}
