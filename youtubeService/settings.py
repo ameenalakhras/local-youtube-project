@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from configparser import RawConfigParser
 config = RawConfigParser()
+config.read('youtubeService/settings.ini')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '21itija)lvu33=%%4$nr8$9%av&2vum0f!o7v8t5#^7d#*8fn!'
+SECRET_KEY = config.get('django_project', 'SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -221,7 +222,6 @@ MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 
-config.read('youtubeService/settings.ini')
 
 SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')

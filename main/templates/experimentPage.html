@@ -5,16 +5,16 @@
 {% block title %}Main page{% endblock %}
 
 {% block content %}
-<input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+<input type="hidden" id="downloadVideoList" data-url="{% url 'downloadVideoList' %}" />
 
   <div class="container-fluid">
     <br>
     <div class="row">
       <!-- center the form -->
         <div class="d-flex justify-content-center align-items-center container">
-          <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
+          <form class="" action="{% url 'downloadVideoList' %}" method="POST" id="questionForm">
             {% csrf_token %}
-            {{ UploadUrl }}
+            {{ download_video_list_form }}
             <input type="submit" name="" value="download video">
           </form>
         </div>
@@ -40,30 +40,32 @@
         <div id="progress-bar" style="background-color: blue; width: 40%;">&nbsp;</div>
         <div id="progress-bar-message">Waiting for progress to start...</div>
       </div>
+
+  </div>
+
       <script type="text/javascript">
 
-        var trigger = document.getElementById('progress-bar-trigger');
-        var bar = document.getElementById("progress-bar");
-        var barMessage = document.getElementById("progress-bar-message");
+        let trigger = document.getElementById('progress-bar-trigger');
+        let bar = document.getElementById("progress-bar");
+        let barMessage = document.getElementById("progress-bar-message");
 
 
         function updateProgress(progressBarElement, progressBarMessageElement, progress) {
-        progressBarElement.style.width = progress.percentage + "%";
-        progressBarMessageElement.innerHTML = progress.percentage + '%';
+        progressBarElement.style.width = progress["percentage"] + "%";
+        progressBarMessageElement.innerHTML = progress["percentage"] + '%';
       }
 
 
       // update the progress bar function
-      ajax_percentage = 10
+      ajax_percentage = 10;
       progress = {
         percentage: ajax_percentage,
         total: 100,
-      }
+      };
       updateProgress(bar, barMessage, progress)
 
 
       </script>
-
 
 
 {% endblock %}

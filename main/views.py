@@ -3,19 +3,22 @@ import youtube_dl
 import os
 from django.conf import settings
 from django.shortcuts import render
-from .models import Audio
+from main.models import Audio, VideoList
 from django.db.utils import IntegrityError
 from youtube_dl.utils import DownloadError
 from requests.exceptions import HTTPError
-from .youtubeDlFucntions import my_hook,MyLogger,createRecord, checkRecordExists,\
-                                getYoutubeDlOptions, catchSavingExcetions,\
-                                checkUrlType
+from main.youtubeDlFucntions import my_hook, MyLogger, createRecord, checkRecordExists,\
+                                    getYoutubeDlOptions, catchSavingExcetions,\
+                                    checkUrlType, playlistOptions, createVideoList,\
+                                    get_video_url_from_link
 from django.views.decorators.http import require_http_methods, require_GET
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import redirect
-from .forms import UploadUrl as UploadVideoForm
+from main.forms import DownloadUrl as DownloadVideoForm
+from main.forms import DownloadListUrl as DownloadVideoListForm
 
 from main.utils import AWS
+
 
 def mainPage(request):
     """
@@ -23,18 +26,22 @@ def mainPage(request):
     """
     audioRecords = Audio.objects.all()
     videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
-    # import ipdb; ipdb.set_trace()
+
 
     thumbnail_urls = [(settings.MEDIA_URL + (record.image_file.name or ""))  for record in  audioRecords]
     titles = [record.title for record in  audioRecords]
 
-    uploadForm = UploadVideoForm()
+    DownloadForm = DownloadVideoForm()
+    download_video_list_form = DownloadVideoListForm()
+
     context = {
         # "audioRecords":audioRecords,
         "thumbnail_urls":thumbnail_urls,
         "titles":titles,
         "videos_source": videos_source,
-        "UploadUrl": uploadForm,
+        "DownloadUrl": DownloadForm,
+        "download_video_list_form": download_video_list_form,
+
 
     }
     return render(request, template_name="mainPage.html" ,context=context )
@@ -78,15 +85,75 @@ def experimentFunction(request):
     """ this function is for site experimntation and for feature preperations """
     audioRecords = Audio.objects.all()
     videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
-    uploadForm = UploadVideoForm()
+    download_video_list_form = DownloadVideoListForm()
+
+
+    # playlistOptions()
     context = {
         # "audioRecords":audioRecords,
         "videos_source": videos_source,
-        "UploadUrl": uploadForm,
+        "download_video_list_form": download_video_list_form,
 
     }
     return render(request, template_name="experimentPage.html" ,context=context )
 
+
+@require_http_methods(["POST"])
+def downloadVideoList(request):
+    """
+    the download video list button at the main page
+    """
+
+    listURL = request.POST.get('question','')
+    # listURL = "https://www.youtube.com/playlist?list=PLLMjTMpBr4H1I2hUXnKvtp5m9JO07pz9V"
+
+
+    YoutubeDlOptions = playlistOptions()
+
+    with youtube_dl.YoutubeDL({"dump_single_json": True,
+                            "j":True}) as ydl:
+        try:
+            extractedVideosListData = ydl.extract_info(listURL, download=False)
+        except DownloadError as e :
+            response = JsonResponse({"answer":"couldn't download the list, maybe it's not a public playlist !",})
+            response.status_code = 403
+            return response
+
+
+    list_exists = VideoList.objects.filter(list_id=extractedVideosListData["id"]).exists()
+
+    if list_exists:
+        new_videolist_record = VideoList.objects.get(list_id=extractedVideosListData["id"])
+    else:
+        new_videolist_record = createVideoList(extractedVideosListData)
+
+
+    error_messages = []
+    savingReportMessages = []
+    for extractedVideoData in extractedVideosListData["entries"]:
+        origional_url = get_video_url_from_link(extractedVideoData["id"])
+
+        new_record, _ = createRecord(extractedVideoData, origional_url, save=False)
+
+        # new_record.file.name = filePath
+        #
+        savingReportMessage, errorMessage = catchSavingExcetions(new_record)
+
+        if errorMessage is None:
+            # add the video to the videoList
+            new_videolist_record.videos.add(new_record)
+        else:
+            savingReportMessages.append(savingReportMessage)
+            error_messages.append(errorMessage)
+
+    if len(savingReportMessages) == 0:
+            savingReportMessages = "Everything is great, please enjoy the download"
+    else:
+        savingReportMessages = str(savingReportMessages)
+
+    # #ToDo: add errorMessage to the cmd or file logger
+    return JsonResponse({"answer":savingReportMessages,})
+    # redirect("www.google.com")
 
 def upload_an_image_to_aws_experimentation(request):
     aws_id = settings.S3_KEY

@@ -11,7 +11,7 @@ class Audio(models.Model):
     originalurl = models.URLField(max_length=512,unique=True)
     youtube_id = models.CharField(max_length=100, unique=True)
     title = models.TextField()
-    extend =models.CharField(max_length=50)
+    extend =models.CharField(max_length=50, null=True)
     extractor = models.CharField(max_length=30)
     extractor_key = models.CharField(max_length=30)
     duration = models.IntegerField(null=True)
@@ -35,3 +35,24 @@ class Audio(models.Model):
             img_temp.flush()
             image_extention = self.image_url.split(".")[-1]
             self.image_file.save(f"{self.extractor_key}/{self.youtube_id}.{image_extention}", File(img_temp))
+
+
+class VideoList(models.Model):
+    list_type = models.CharField(max_length=300, null=True)
+    list_id = models.CharField(max_length=300, unique=True)
+    title = models.CharField(max_length=300)
+    uploader = models.CharField(max_length=300)
+    uploader_id = models.CharField(max_length=300)
+    uploader_url = models.CharField(max_length=300)
+    extractor = models.CharField(max_length=300)
+    webpage_url = models.CharField(max_length=300)
+    webpage_url_basename = models.CharField(max_length=300)
+    extractor_key = models.CharField(max_length=300)
+    create_date = models.DateTimeField(auto_now=True)
+    videos = models.ManyToManyField(Audio, related_name="video_videoList_manyToMany", blank=True)
+
+    class Meta:
+        ordering = ('create_date',)
+
+    def __str__(self):
+        return self.title

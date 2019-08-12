@@ -1,5 +1,5 @@
 from django.conf import settings
-from .models import Audio
+from .models import Audio, VideoList
 import os
 from django.db.utils import IntegrityError
 from youtube_dl.utils import DownloadError
@@ -7,6 +7,8 @@ from requests.exceptions import HTTPError
 import glob
 # import moviepy.editor as mpe
 from moviepy.editor import *
+
+
 
 def combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name):
 
@@ -23,8 +25,6 @@ def combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name):
     return new_file_path, new_file_extention
 
 
-
-
 class MyLogger(object):
     def debug(self, msg):
         pass
@@ -35,6 +35,7 @@ class MyLogger(object):
     def error(self, msg):
         print(msg)
 
+
 def get_download_status(d):
     """
     returns the download status (download percentage, eta)
@@ -43,6 +44,7 @@ def get_download_status(d):
     downloadOutputPercentage = int(round(downloadBytesPercentage, 2) *100)
     estimatedRemainingTime = d["eta"]
     return("download percentge: {}%      estimated remaining time: {} seconds".format(downloadOutputPercentage,estimatedRemainingTime))
+
 
 def my_hook(d):
     """
@@ -55,6 +57,7 @@ def my_hook(d):
     if d["status"] is "downloading":
         download_status = get_download_status(d)
         print(download_status)
+
 
 def return_fileName_and_extention(folderPath, file_raw_name):
     """
@@ -95,12 +98,23 @@ def return_fileName_and_extention(folderPath, file_raw_name):
     return file_name, file_extention
 
 
-def createRecord(extracted_video_data, video_url):
+def createRecord(extracted_video_data, video_url, save=True):
     """
     create new record of Audio class(in models.py) in the DataBase given the data
     """
-    url = video_url
     youtube_id = extracted_video_data.get("id", None)
+
+    record_exists = Audio.objects.filter(youtube_id=youtube_id).exists()
+    if record_exists:
+        new_record = Audio.objects.get(youtube_id=youtube_id)
+        try:
+            filePath = new_record.file.name
+        except:
+            filePath = None
+        return new_record, filePath
+
+
+    url = video_url
     title = extracted_video_data.get('title', None)
     extractor = extracted_video_data.get("extractor", None)
     extractor_key = extracted_video_data.get("extractor_key", None)
@@ -111,8 +125,12 @@ def createRecord(extracted_video_data, video_url):
     age_limit = extracted_video_data.get("age_limit", None)
 
     folderPath = "{}/{}/".format(settings.MEDIA_ROOT, extractor_key)
-    fileName, extend = return_fileName_and_extention(folderPath=folderPath, file_raw_name=youtube_id)
-    filePath = '{}/{}'.format(extractor_key,fileName)
+    if save:
+        fileName, extend = return_fileName_and_extention(folderPath=folderPath, file_raw_name=youtube_id)
+        filePath = '{}/{}'.format(extractor_key,fileName)
+    else:
+        filePath=None
+        extend=None
 
     image_url =  extracted_video_data.get("thumbnail", None)
 
@@ -136,12 +154,44 @@ def createRecord(extracted_video_data, video_url):
 
     return new_record, filePath
 
+
+def createVideoList(extracted_video_data):
+    list_type = extracted_video_data.get("list_type", None)
+    list_id = extracted_video_data.get("id", None)
+    title = extracted_video_data.get("title", None)
+    uploader = extracted_video_data.get("uploader", None)
+    uploader_id = extracted_video_data.get("uploader_id", None)
+    uploader_url = extracted_video_data.get("uploader_url", None)
+    extractor = extracted_video_data.get("extractor", None)
+    webpage_url = extracted_video_data.get("webpage_url", None)
+    webpage_url_basename = extracted_video_data.get("webpage_url_basename", None)
+    extractor_key = extracted_video_data.get("extractor_key", None)
+
+    new_video_list_record = VideoList(
+        list_type=list_type,
+        list_id=list_id,
+        title=title,
+        uploader=uploader,
+        uploader_id=uploader_id,
+        uploader_url=uploader_url,
+        extractor=extractor,
+        webpage_url=webpage_url,
+        webpage_url_basename=webpage_url_basename,
+        extractor_key=extractor_key,
+    )
+
+    new_video_list_record.save()
+
+    return new_video_list_record
+
+
 def checkRecordExists(videoURL):
     """
     check if the record exists or not in the dataBase
     """
     result = Audio.objects.filter(originalurl=videoURL).exists()
     return result
+
 
 def getYoutubeDlOptions(heightest_width=256):
     #  widths given the resolution
@@ -157,6 +207,23 @@ def getYoutubeDlOptions(heightest_width=256):
                 'progress_hooks': [my_hook],
                 "outtmpl":f"{settings.MEDIA_ROOT}/%(extractor_key)s/%(id)s.%(ext)s", # the name of the saved file
             }
+
+# PLLMjTMpBr4H1I2hUXnKvtp5m9JO07pz9V
+# def getYoutubeDlOptions(heightest_width=256):
+#     #  widths given the resolution
+#     # 	256.0 	144p
+#     #  	426.0 	240p
+#     #  	640.0 	360p
+#     #  	854.0 	480p
+#     # 	1280.0 	720p
+#     # 	640.0 	medium
+#     return {
+#                 'format':f'-f bestvideo[width<={heightest_width}]/bestvideo+bestaudio/best',
+#                 'logger': MyLogger(),
+#                 'progress_hooks': [my_hook],
+#                 "outtmpl":f"{settings.MEDIA_ROOT}/%(extractor_key)s/%(id)s.%(ext)s", # the name of the saved file
+#             }
+#
 
 def catchSavingExcetions(new_record):
     """
@@ -178,6 +245,7 @@ def catchSavingExcetions(new_record):
 
     return message, errorMessage
 
+
 def checkUrlType(text):
     """ check if the inputted is a URL or a video ID """
 
@@ -198,7 +266,8 @@ def checkUrlType(text):
 
     return text_type
 
-def get_video_url_from_link(text):
+
+def get_video_url_from_link(text, video_id=None):
     """
         checks the type of the link using checkUrlType then transforms it into a downloadable video url
     """
@@ -211,8 +280,19 @@ def get_video_url_from_link(text):
     elif video_type is "playlist":
         pass
     elif video_type is "video_id":
-        video_url = f"https://www.youtube.com/watch?v={video_id}"
+        # the text is the video_id here
+        video_url = f"https://www.youtube.com/watch?v={text}"
     else:
         raise ValueError("video type isn't recognized")
 
     return video_url
+
+
+def playlistOptions():
+    # playlistreverse
+    return {
+                # 'format':'--flat-playlist -j --skip-download',
+                'logger': MyLogger(),
+                # 'progress_hooks': [my_hook],
+                "outtmpl":f"{settings.BASE_DIR}/result.log", # the name of the saved file
+            }

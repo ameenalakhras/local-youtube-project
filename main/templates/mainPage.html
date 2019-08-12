@@ -14,6 +14,7 @@
       }
 </style>
 <input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+<input type="hidden" id="downloadVideoList" data-url="{% url 'downloadVideoList' %}" />
 
 
   <div class="container-fluid">
@@ -22,18 +23,24 @@
 
     <!-- download video form start -->
     <div class="row">
-      <!-- center the form -->
-        <div class="d-flex justify-content-center align-items-center container">
-          <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
-            {% csrf_token %}
-            {{ UploadUrl }}
-            <input type="submit" name="" value="download video">
-          </form>
-        </div>
+      <!-- the start of the two forms -->
+      <div class="d-flex justify-content-center align-items-center container">
+        <form class="" action="{% url 'downloadVideo' %}" method="POST" id="single_video_question_form">
+          {% csrf_token %}
+          {{ DownloadUrl }}
+          <input type="submit" name="" value="download video">
+        </form>
 
+        OR
+
+        <form class="" action="{% url 'downloadVideoList' %}" method="POST" id="multiple_videos_question_form">
+          {% csrf_token %}
+          {{ download_video_list_form }}
+          <input type="submit" name="" value="add video List">
+        </form>
+      </div>
+      <!-- the end of the two forms -->
     </div>
-    <!-- download video form end -->
-
     <br>
 
     <div class="container-fluid" id="all_videos">
@@ -58,7 +65,7 @@
                         {% for thumbnail in thumbnail_urls %}
                           {% if forloop.counter0 < 4 %}
                             <div class="col-3 float-left">
-                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})">
+                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})" alt="video thumbnail">
                             </div>
                           {% endif %}
                         {% endfor %}
@@ -76,7 +83,7 @@
                             {% endif %}
 
                             <div class="col-3 float-left">
-                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})">
+                              <img class="d-block w-100 img-fluid img-max-width" src="{{thumbnail}}" onclick="play_song_from_thumbnail_image({{forloop.counter0}})" alt="video thumbniail">
                             </div>
                           {% endif %}
 
@@ -122,6 +129,7 @@
       </div>
     </div>
 
+  </div>
 
     <script type="text/javascript">
 
@@ -129,14 +137,14 @@
         $('#recipeCarousel').bind('mousewheel', function(e){
           e.preventDefault();
 
-          if(e.originalEvent.wheelDelta /120 > 0) {
+          if(e.originalEvent["wheelDelta"] /120 > 0) {
             console.log('scrolling up !');
              $("#recipeCarousel").carousel("next");
           }
           else{
             console.log('scrolling down !');
             $("#recipeCarousel").carousel("prev");
-          };
+          }
         });
       });
 
@@ -148,91 +156,79 @@
       thumbnail_urls = {{ thumbnail_urls|safe }};
       titles = {{ titles|safe }};
 
-      videos_length =  videos_source_list.length
-      last_index = videos_length - 1
-      first_index = 0
+      videos_length =  videos_source_list.length;
+      last_index = videos_length - 1;
+      first_index = 0;
 
-      video_player = document.getElementById("videoPlayer")
-      nextVideoButton = document.getElementById("nextVideoButton")
-      previousVideoButton = document.getElementById("previousVideoButton")
-      video_name = document.getElementById("videoName")
-      current_index = 0
-
-
-
-
-
-
-      function add_video_source_index(index){
-        video_player.src= videos_source_list[index];
-      }
-      function add_video_title(index){
-        video_name.innerHTML = titles[index]
-      }
-
-      function add_video_thumbnail(index){
-        video_player.poster = thumbnail_urls[index]
-      }
-
-      function play_song_from_thumbnail_image(index){
-        add_video_source_index(index)
-        add_video_title(index)
-        add_video_thumbnail(index)
-      }
-
-      function next()  {
-        current_index = current_index + 1
-
-        if(current_index <= last_index){
-          add_video_source_index(current_index)
-          add_video_title(current_index)
-          add_video_thumbnail(current_index)
-        }
-        else if(current_index > last_index){
-          notify("you reached the last video !", false)
-        }
-        enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
-      }
-
-
-      function previous(){
-        current_index = current_index - 1
-
-        if(current_index < first_index){
-          notify("you reached the last video !", false)
-        }
-
-        else if(current_index >= first_index){
-          add_video_source_index(current_index)
-          add_video_title(current_index)
-          add_video_thumbnail(current_index)
-        }
-
-        enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
-      }
+      video_player = document.getElementById("videoPlayer");
+      nextVideoButton = document.getElementById("nextVideoButton");
+      previousVideoButton = document.getElementById("previousVideoButton");
+      video_name = document.getElementById("videoName");
+      current_index = 0;
 
 
       function enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton){
 
-        if(current_index <= first_index){
-          previousVideoButton.disabled = true
-        }
-        else{
-          previousVideoButton.disabled = false
-        }
+          previousVideoButton.disabled = current_index <= first_index;
 
-        if(current_index >= last_index){
-          nextVideoButton.disabled = true
-        }
-        else{
-          nextVideoButton.disabled = false
-        }
+          nextVideoButton.disabled = current_index >= last_index;
 
+      }
+
+
+
+      function add_video_source_index(index){
+          video_player.src= videos_source_list[index];
+      }
+      function add_video_title(index){
+          video_name.innerHTML = titles[index];
+      }
+
+      function add_video_thumbnail(index){
+          video_player.poster = thumbnail_urls[index];
+      }
+
+      function play_song_from_thumbnail_image(index){
+          add_video_source_index(index);
+          add_video_title(index);
+          add_video_thumbnail(index);
+          enableAndDisableButtons(current_index=index, first_index, last_index, previousVideoButton, nextVideoButton)
+      }
+
+      function next()  {
+        current_index = current_index + 1;
+
+      if(current_index <= last_index){
+        add_video_source_index(current_index);
+        add_video_title(current_index);
+        add_video_thumbnail(current_index)
+      }
+      else if(current_index > last_index){
+        notify("you reached the last video !", false)
+      }
+      enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
+      }
+
+
+      function previous(){
+          let current_index = current_index - 1;
+
+      if(current_index < first_index){
+        notify("you reached the last video !", false)
+      }
+
+      else if(current_index >= first_index){
+        add_video_source_index(current_index);
+        add_video_title(current_index);
+        add_video_thumbnail(current_index)
+      }
+
+      enableAndDisableButtons(current_index, first_index, last_index, previousVideoButton, nextVideoButton)
       }
 
       //on video end
       video_player.onended = function() {
-        next()
+      next()
       };
 
 
@@ -240,25 +236,47 @@
 
     <script type="text/javascript">
 
-      var questionForm = $('#questionForm');
+      let single_video_form = $('#single_video_question_form');
+      let multiple_videos_form = $("#multiple_videos_question_form");
 
-      questionForm.submit(function (e) {
+      single_video_form.submit(function (e) {
 
         e.preventDefault();
-        var url = $("#downloadVideoUrl").attr("data-url");
+        let url = $("#downloadVideoUrl").attr("data-url");
 
-        notify("download request started ...", true)
+        notify("download request started ...", true);
 
         $.ajax({
             type: 'POST',
             url: url,
-            data: questionForm.serialize(),
+            data: single_video_form.serialize(),
             success: function (data) {
-              notify(data.answer, true)
+              notify(data["answer"], true)
             },
             error: function (data) {
                 notify('An error occurred :' + data.message, false);
-                console.log('An error occurred :' + data.message)
+                console.log('An error occurred :' + data.message);
+                console.log(data);
+            },
+        });
+      });
+
+      multiple_videos_form.submit(function (e){
+        e.preventDefault();
+        let url = $("#downloadVideoList").attr("data-url");
+        notify("download list request started ...", true);
+
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: multiple_videos_form.serialize(),
+            success: function (data) {
+              notify(data["answer"], true)
+            },
+            error: function (data) {
+                notify('An error occurred :' + data.message, false);
+                console.log('An error occurred :' + data.message);
                 console.log(data)
             },
         });
@@ -266,7 +284,6 @@
 
 
     </script>
-
 
 
 <!--
