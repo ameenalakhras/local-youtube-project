@@ -296,3 +296,14 @@ def playlistOptions():
                 # 'progress_hooks': [my_hook],
                 "outtmpl":f"{settings.BASE_DIR}/result.log", # the name of the saved file
             }
+
+
+def check_empty_file_field(file_field):
+    """ Check if the file in django FileField is empty """
+
+    empty_file = ""
+
+    if file_field.file.name is empty_file:
+        return True
+    else:
+        return False

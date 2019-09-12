@@ -12,4 +12,7 @@ urlpatterns = [
     path("experimentationPage/", views.experimentFunction, name="experimentPage"),
     path("hi/", views.upload_an_image_to_aws_experimentation),
     path("downloadVideoList", views.downloadVideoList, name="downloadVideoList"),
+    path("record/<audio_id>/",views.audio_page, name="audio_page"),
+
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

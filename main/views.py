@@ -81,18 +81,24 @@ def browseVideos(request):
     }
     return render(request, template_name="browseVideos.html" ,context=context )
 
+
 def experimentFunction(request):
     """ this function is for site experimntation and for feature preperations """
-    audioRecords = Audio.objects.all()
-    videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
-    download_video_list_form = DownloadVideoListForm()
+    video_list = VideoList.objects.all()
+
+
+    # audioRecords = Audio.objects.all()
+    # videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
+    # download_video_list_form = DownloadVideoListForm()
 
 
     # playlistOptions()
+    # import ipdb; ipdb.set_trace()
     context = {
+        "video_lists": video_list,
         # "audioRecords":audioRecords,
-        "videos_source": videos_source,
-        "download_video_list_form": download_video_list_form,
+        # "videos_source": videos_source,
+        # "download_video_list_form": download_video_list_form,
 
     }
     return render(request, template_name="experimentPage.html" ,context=context )
@@ -176,3 +182,12 @@ def upload_an_image_to_aws_experimentation(request):
     print("hi")
 
     return redirect("www.google.com")
+
+@require_http_methods(["GET"])
+def audio_page(request, audio_id):
+    video = Audio.objects.get(id=audio_id)
+    context = {
+        "video": video,
+    }
+
+    return render(request, template_name="Audio.html" ,context=context )

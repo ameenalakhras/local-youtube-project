@@ -5,67 +5,27 @@
 {% block title %}Main page{% endblock %}
 
 {% block content %}
-<input type="hidden" id="downloadVideoList" data-url="{% url 'downloadVideoList' %}" />
 
-  <div class="container-fluid">
-    <br>
-    <div class="row">
-      <!-- center the form -->
-        <div class="d-flex justify-content-center align-items-center container">
-          <form class="" action="{% url 'downloadVideoList' %}" method="POST" id="questionForm">
-            {% csrf_token %}
-            {{ download_video_list_form }}
-            <input type="submit" name="" value="download video">
-          </form>
-        </div>
+  {% for list in video_lists%}
+
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse{{list.id}}" aria-expanded="false" aria-controls="collapseExample">
+      {{list.title}} list
+    </button>
+
+  <div class="collapse" id="collapse{{list.id}}">
+    <div class="card card-body">
+      {% for song in list.videos.all %}
+
+        <a href="{% url 'audio_page' song.id%}">{{song.title}}</a>
+
+      {% endfor %}
+
+
     </div>
-
-
-    <!-- <div class="row">
-        <div class="d-flex justify-content-center align-items-center container">
-          <form class="" action="{% url 'downloadVideo' %}" method="POST" id="questionForm">
-            {% csrf_token %}
-            {{ UploadUrl }}
-            <input type="submit" name="" value="download List">
-          </form>
-        </div>
-    </div>
-  </div> -->
-
-
-
-
-      <div id="progress-wrapper">
-        <button id="progress-bar-trigger">Run</button>
-        <div id="progress-bar" style="background-color: blue; width: 40%;">&nbsp;</div>
-        <div id="progress-bar-message">Waiting for progress to start...</div>
-      </div>
-
   </div>
 
-      <script type="text/javascript">
 
-        let trigger = document.getElementById('progress-bar-trigger');
-        let bar = document.getElementById("progress-bar");
-        let barMessage = document.getElementById("progress-bar-message");
-
-
-        function updateProgress(progressBarElement, progressBarMessageElement, progress) {
-        progressBarElement.style.width = progress["percentage"] + "%";
-        progressBarMessageElement.innerHTML = progress["percentage"] + '%';
-      }
-
-
-      // update the progress bar function
-      ajax_percentage = 10;
-      progress = {
-        percentage: ajax_percentage,
-        total: 100,
-      };
-      updateProgress(bar, barMessage, progress)
-
-
-      </script>
+  {% endfor %}
 
 
 {% endblock %}
