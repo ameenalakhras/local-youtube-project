@@ -101,16 +101,27 @@ def return_fileName_and_extention(folderPath, file_raw_name):
 def createRecord(extracted_video_data, video_url, save=True):
     """
     create new record of Audio class(in models.py) in the DataBase given the data
+    if the record exists > it returns the existed record
+    return the mp4 file path and the new record
     """
     youtube_id = extracted_video_data.get("id", None)
 
     record_exists = Audio.objects.filter(youtube_id=youtube_id).exists()
+
     if record_exists:
         new_record = Audio.objects.get(youtube_id=youtube_id)
         try:
             filePath = new_record.file.name
+            file_exists = True
         except:
-            filePath = None
+            file_exists = False
+
+        if (file_exists is False) or (filePath is ''):
+            check = check_file_exists_and_not_connected_to_database(record = new_record)
+            if check["status"] is False:
+                filePath = None
+            else:
+                filePath = check["filePath"]
         return new_record, filePath
 
 
@@ -156,6 +167,8 @@ def createRecord(extracted_video_data, video_url, save=True):
 
 
 def createVideoList(extracted_video_data):
+    """ create a video List with its info (videos aren't included
+        using this function) """
     list_type = extracted_video_data.get("list_type", None)
     list_id = extracted_video_data.get("id", None)
     title = extracted_video_data.get("title", None)
@@ -189,8 +202,19 @@ def checkRecordExists(videoURL):
     """
     check if the record exists or not in the dataBase
     """
-    result = Audio.objects.filter(originalurl=videoURL).exists()
-    return result
+    record_exists = Audio.objects.filter(originalurl=videoURL).exists()
+
+    if record_exists is True:
+        try:
+            file = new_record.file.name
+            file_exists = True
+        except:
+            file_exists = False
+
+        if file_exists is False:
+            return False
+
+    return record_exists
 
 
 def getYoutubeDlOptions(heightest_width=256):
@@ -208,22 +232,6 @@ def getYoutubeDlOptions(heightest_width=256):
                 "outtmpl":f"{settings.MEDIA_ROOT}/%(extractor_key)s/%(id)s.%(ext)s", # the name of the saved file
             }
 
-# PLLMjTMpBr4H1I2hUXnKvtp5m9JO07pz9V
-# def getYoutubeDlOptions(heightest_width=256):
-#     #  widths given the resolution
-#     # 	256.0 	144p
-#     #  	426.0 	240p
-#     #  	640.0 	360p
-#     #  	854.0 	480p
-#     # 	1280.0 	720p
-#     # 	640.0 	medium
-#     return {
-#                 'format':f'-f bestvideo[width<={heightest_width}]/bestvideo+bestaudio/best',
-#                 'logger': MyLogger(),
-#                 'progress_hooks': [my_hook],
-#                 "outtmpl":f"{settings.MEDIA_ROOT}/%(extractor_key)s/%(id)s.%(ext)s", # the name of the saved file
-#             }
-#
 
 def catchSavingExcetions(new_record):
     """
@@ -307,3 +315,23 @@ def check_empty_file_field(file_field):
         return True
     else:
         return False
+
+def check_file_exists_and_not_connected_to_database(record):
+    """ a bug might happen(it happened once) that the file physically exists
+        but it's location is not added to the database file (this function will
+        solve this problem if it happens) """
+
+    folderPath = "{}/{}/".format(settings.MEDIA_ROOT, record.extractor_key)
+    try:
+        file_name, file_extention = return_fileName_and_extention(folderPath=folderPath, file_raw_name=record.youtube_id)
+        file_exists = True
+    # if file doesn't exist
+    except ValueError:
+        file_exists = False
+
+    if file_exists:
+        extractor_key = record.extractor_key
+        filePath = '{}/{}'.format(extractor_key,file_name)
+        return {'status': True, "filePath": filePath}
+    else:
+        return {"status": False}

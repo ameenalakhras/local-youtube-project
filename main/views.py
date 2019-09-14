@@ -188,6 +188,7 @@ def audio_page(request, audio_id):
     video = Audio.objects.get(id=audio_id)
     context = {
         "video": video,
+        "MEDIA_URL": settings.MEDIA_URL
     }
 
     return render(request, template_name="Audio.html" ,context=context )

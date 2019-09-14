@@ -19,3 +19,4 @@ staticfiles/
 venv/
 main/CustomtemplateFilters.py
 .idea/
+main/migrations/*
