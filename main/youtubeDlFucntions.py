@@ -98,17 +98,18 @@ def return_fileName_and_extention(folderPath, file_raw_name):
     return file_name, file_extention
 
 
-def createRecord(extracted_video_data, video_url, save=True):
+def createRecord(extracted_video_data, save=True, update_data=False):
     """
     create new record of Audio class(in models.py) in the DataBase given the data
     if the record exists > it returns the existed record
-    return the mp4 file path and the new record
+    return the mp4 file path and the new record.
+    it also updates the record columns if update_data is true.
     """
+    extractor_key = extracted_video_data.get("extractor_key", None)
     youtube_id = extracted_video_data.get("id", None)
-
     record_exists = Audio.objects.filter(youtube_id=youtube_id).exists()
 
-    if record_exists:
+    if record_exists and (update_data is False):
         new_record = Audio.objects.get(youtube_id=youtube_id)
         try:
             filePath = new_record.file.name
@@ -125,43 +126,67 @@ def createRecord(extracted_video_data, video_url, save=True):
         return new_record, filePath
 
 
-    url = video_url
+
+    url = generate_youtube_url(youtube_id)
     title = extracted_video_data.get('title', None)
     extractor = extracted_video_data.get("extractor", None)
-    extractor_key = extracted_video_data.get("extractor_key", None)
     duration = extracted_video_data.get("duration", None)
     view_count = extracted_video_data.get("view_count", None)
     like_count = extracted_video_data.get("like_count", None)
     dislike_count = extracted_video_data.get("dislike_count", None)
     age_limit = extracted_video_data.get("age_limit", None)
-
-    folderPath = "{}/{}/".format(settings.MEDIA_ROOT, extractor_key)
-    if save:
-        fileName, extend = return_fileName_and_extention(folderPath=folderPath, file_raw_name=youtube_id)
-        filePath = '{}/{}'.format(extractor_key,fileName)
-    else:
-        filePath=None
-        extend=None
-
     image_url =  extracted_video_data.get("thumbnail", None)
 
-    new_record = Audio(
-        url=url,
-        originalurl=video_url,
-        youtube_id=youtube_id,
-        title=title,
-        extend=extend,
-        extractor=extractor,
-        extractor_key=extractor_key,
-        duration=duration,
-        view_count=view_count,
-        like_count=like_count,
-        dislike_count=dislike_count,
-        age_limit=age_limit,
-        image_url=image_url
-    )
-    if image_url is not None:
-        new_record.get_remote_image()
+    if update_data:
+        new_record = Audio.objects.get(youtube_id=youtube_id)
+        new_record.url = url
+        new_record.originalurl = url
+        new_record.youtube_id = youtube_id
+        new_record.title = title
+        new_record.extractor = extractor
+        new_record.extractor_key = extractor_key
+        new_record.duration = duration
+        new_record.view_count = view_count
+        new_record.like_count = like_count
+        new_record.dislike_count = dislike_count
+        new_record.age_limit = age_limit
+        new_record.image_url = image_url
+
+        if (image_url is not None) and (new_record.image_file == None):
+            new_record.get_remote_image()
+
+        filePath = None
+
+    else:
+
+        folderPath = "{}/{}/".format(settings.MEDIA_ROOT, extractor_key)
+        if save:
+            fileName, extend = return_fileName_and_extention(folderPath=folderPath, file_raw_name=youtube_id)
+            filePath = '{}/{}'.format(extractor_key,fileName)
+        else:
+            filePath=None
+            extend=None
+
+        new_record = Audio(
+            url=url,
+            originalurl=url,
+            youtube_id=youtube_id,
+            title=title,
+            extend=extend,
+            extractor=extractor,
+            extractor_key=extractor_key,
+            duration=duration,
+            view_count=view_count,
+            like_count=like_count,
+            dislike_count=dislike_count,
+            age_limit=age_limit,
+            image_url=image_url
+        )
+
+        new_record.extend = extend
+
+        if image_url is not None:
+            new_record.get_remote_image()
 
     return new_record, filePath
 
@@ -197,24 +222,48 @@ def createVideoList(extracted_video_data):
 
     return new_video_list_record
 
+def extract_youtube_id_from_url(url):
+    """extracts the video id from a video url"""
+    video_id = url.split("watch?v=")[1]
+    video_id = video_id.split("/")[0] # trim anything after the video id
+    return video_id
 
-def checkRecordExists(videoURL):
+def checkRecordExists(video_id, entry_type="youtube_id"):
     """
     check if the record exists or not in the dataBase
     """
-    record_exists = Audio.objects.filter(originalurl=videoURL).exists()
-
-    if record_exists is True:
-        try:
-            file = new_record.file.name
-            file_exists = True
-        except:
-            file_exists = False
-
-        if file_exists is False:
-            return False
+    if entry_type == "youtube_id":
+        record_exists = Audio.objects.filter(youtube_id=video_id).exists()
+    elif entry_type == "database_id":
+        if type(video_id) == str:
+            video_id = int(video_id)
+        record_exists = Audio.objects.filter(id=video_id).exists()
+    else:
+        raise ValueError("entry type doesn't exist")
 
     return record_exists
+
+def checkRecordFileExists(video_id, entry_type="youtube_id"):
+    """Checks if the record video file exists """
+
+    if entry_type == "youtube_id":
+        record = Audio.objects.filter(youtube_id=video_id).first()
+    elif entry_type == "database_id":
+        if type(video_id) == str:
+            video_id = int(video_id)
+        record = Audio.objects.filter(id=video_id).first()
+
+    try:
+        file = record.file.name
+        file_exists = True
+        if file == '':
+            file_exists = False
+    except:
+        file_exists = False
+
+
+    return file_exists
+
 
 
 def getYoutubeDlOptions(heightest_width=256):
@@ -244,13 +293,15 @@ def catchSavingExcetions(new_record):
         errorMessage = None
 
     except IntegrityError as e:
-        message = "record is saved already with this id"
-        errorMessage = "exception happened which is :\n" + str(e)
+        message = f"record is saved already with this id, the litteral problem is {str(e)}"
+        # errorMessage = "exception happened which is :\n" + str(e)
+        errorMessage = "the file already exists, if the problem appears a lot report to the website developer please"
 
     except (DownloadError, HTTPError) as e:
-        message = "couldn't get the file !"
-        errorMessage = "exception happened which is :\n" + str(e)
+        message = f"couldn't get the file (which is {str(e)})!"
+        errorMessage = "a problem has happened while saving the file, please try again later"
 
+    print(f"the hidden error message is:\n {message}")
     return message, errorMessage
 
 
@@ -335,3 +386,8 @@ def check_file_exists_and_not_connected_to_database(record):
         return {'status': True, "filePath": filePath}
     else:
         return {"status": False}
+
+def generate_youtube_url(video_id):
+    """generate a youtube url given the video id"""
+    video_url = f"""https://www.youtube.com/watch?v={video_id}"""
+    return video_url

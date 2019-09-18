@@ -10,7 +10,8 @@ from requests.exceptions import HTTPError
 from main.youtubeDlFucntions import my_hook, MyLogger, createRecord, checkRecordExists,\
                                     getYoutubeDlOptions, catchSavingExcetions,\
                                     checkUrlType, playlistOptions, createVideoList,\
-                                    get_video_url_from_link
+                                    get_video_url_from_link, generate_youtube_url,\
+                                    extract_youtube_id_from_url, checkRecordFileExists
 from django.views.decorators.http import require_http_methods, require_GET
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import redirect
@@ -53,8 +54,16 @@ def downloadVideo(request):
     the download video button at the main page
     """
     videoURL = request.POST.get('question','')
+    video_id = extract_youtube_id_from_url(videoURL)
 
-    if checkRecordExists(videoURL) is True:
+    file_exists = False
+    record_exists = checkRecordExists(video_id, entry_type="youtube_id")
+    if record_exists:
+        file_exists = checkRecordFileExists(video_id, entry_type="youtube_id")
+        print(file_exists)
+
+
+    if (record_exists and file_exists) is True:
         return JsonResponse({
             "answer" : "video exists already",
         })
@@ -65,7 +74,7 @@ def downloadVideo(request):
         with youtube_dl.YoutubeDL(YoutubeDlOptions) as ydl:
             extractedVideoData = ydl.extract_info(videoURL, download=True)
 
-        new_record, filePath = createRecord(extractedVideoData, videoURL)
+        new_record, filePath = createRecord(extractedVideoData)
         new_record.file.name = filePath
 
         savingReportMessage, errorMessage = catchSavingExcetions(new_record)
@@ -139,7 +148,7 @@ def downloadVideoList(request):
     for extractedVideoData in extractedVideosListData["entries"]:
         origional_url = get_video_url_from_link(extractedVideoData["id"])
 
-        new_record, _ = createRecord(extractedVideoData, origional_url, save=False)
+        new_record, _ = createRecord(extractedVideoData, save=False)
 
         # new_record.file.name = filePath
         #
@@ -192,3 +201,31 @@ def audio_page(request, audio_id):
     }
 
     return render(request, template_name="Audio.html" ,context=context )
+
+@require_http_methods(["POST"])
+def update_audio_info(request):
+    """ takes the audio id and updates all of its info but the video and image files"""
+    audio_id = request.POST.get('question','')
+    file_exists = False
+    record_exists = checkRecordExists(audio_id, entry_type="database_id")
+    if record_exists:
+        file_exists = checkRecordFileExists(audio_id, entry_type="database_id")
+
+    if record_exists  is False:
+        return JsonResponse({
+            "answer" : "video doesn't exists !",
+        })
+    else:
+        youtube_url_id = Audio.objects.get(id=audio_id).youtube_id
+        videoURL = generate_youtube_url(youtube_url_id)
+
+        YoutubeDlOptions = getYoutubeDlOptions()
+
+        with youtube_dl.YoutubeDL(YoutubeDlOptions) as ydl:
+            extractedVideoData = ydl.extract_info(videoURL, download=False)
+        # import ipdb; ipdb.set_trace()
+        new_record, _ = createRecord(extractedVideoData, update_data=True)
+
+        savingReportMessage, errorMessage = catchSavingExcetions(new_record)
+        #ToDo: add errorMessage to the cmd or file logger
+        return JsonResponse({"answer":savingReportMessage,})

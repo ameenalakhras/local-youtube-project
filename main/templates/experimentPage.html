@@ -7,6 +7,7 @@
 {% block content %}
 
 <input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+<input type="hidden" id="refresh_audio_info" data-url="{% url 'refresh_audio_info' %}" />
 
 <div class="container">
 
@@ -34,14 +35,16 @@
 
                     {% if song.file.name != ''%}
 
+                      <!-- <input hidden type="text" name="audio_id" value="{{song.id}}"> -->
                       <i class="fas fa-video" onclick="location.href='#';" style="cursor: pointer;"></i>
 
                     {% else %}
 
                     <!-- <input hidden type="text" name="question" value="{{song.url}}"> -->
-                    <button type="submit" name="{{song.url}}"><i class="fas fa-cloud-download-alt"></i></button>
+                    <button type="submit" name="{{song.url}}" value="download" ><i class="fas fa-cloud-download-alt"></i></button>
 
                     {% endif %}
+                    <button type="submit" value="refresh" name="{{song.id}}"  ><i class="fas fa-redo-alt"></i></button>
 
                   </div>
 
@@ -65,20 +68,34 @@
     <input type="text" name="question" value="" id="video_url">
   </form>
 
+  <form hidden class="" action="{% url 'refresh_audio_info' %}" method="POST" id="refresh_audio_info_form">
+    {% csrf_token %}
+    <input type="text" name="question" value="" id="video_refresh_id">
+  </form>
+
 
     <script type="text/javascript">
       let download_video_form = $("#download_video");
       var single_video_form = $('#single_video_question_form');
+      var refresh_audio_info_form = $("#refresh_audio_info_form");
 
-      var s;
-      var n;
+      // var s;
+      // var n;
       download_video_form.submit(function (e) {
+
         e.preventDefault();
         clicked_button = document.activeElement;
-        video_url = clicked_button.name
-        $('#video_url').attr('value', video_url);
-        console.log("hi", video_url)
-        single_video_form.submit()
+        if (clicked_button.value == "download"){
+
+          video_url = clicked_button.name;
+          $('#video_url').attr('value', video_url);
+          single_video_form.submit();
+        }
+        else{
+          video_id = clicked_button.name;
+          $('#video_refresh_id').attr('value', video_id);
+          refresh_audio_info_form.submit();
+        }
 
       });
 
@@ -104,6 +121,27 @@
         });
       });
 
+      refresh_audio_info_form.submit(function (e) {
+        e.preventDefault();
+        let url = $("#refresh_audio_info").attr("data-url");
+
+        notify("download started ...", true);
+        console.log(refresh_audio_info_form.serialize())
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: refresh_audio_info_form.serialize(),
+            success: function (data) {
+              notify(data["answer"], true)
+            },
+            error: function (data) {
+                notify('An error occurred :' + data.message, false);
+                console.log('An error occurred :' + data.message);
+                console.log(data);
+            },
+        });
+      });
     </script>
 </div>
 {% endblock %}
