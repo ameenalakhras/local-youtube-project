@@ -40,10 +40,11 @@ def get_download_status(d):
     """
     returns the download status (download percentage, eta)
     """
-    downloadBytesPercentage = d["downloaded_bytes"] / d["total_bytes"]
-    downloadOutputPercentage = int(round(downloadBytesPercentage, 2) *100)
-    estimatedRemainingTime = d["eta"]
-    return("download percentge: {}%      estimated remaining time: {} seconds".format(downloadOutputPercentage,estimatedRemainingTime))
+    ###extra keys for more usage ..:
+    ## ["_speed_str"] # kiB/second  ## ["_total_bytes_str"] ##["_eta_str"]
+    downloadOutputPercentage = d["_percent_str"]
+    estimatedRemainingTime = d["_eta_str"]
+    return("download percentge: {}     estimated remaining time: {}".format(downloadOutputPercentage,estimatedRemainingTime))
 
 
 def my_hook(d):
@@ -152,7 +153,9 @@ def createRecord(extracted_video_data, save=True, update_data=False):
         new_record.age_limit = age_limit
         new_record.image_url = image_url
 
-        if (image_url is not None) and (new_record.image_file == None):
+        image_doesnt_exist = (image_url is not None) and ( (new_record.image_file == None) or (new_record.image_file.name == '') )
+
+        if image_doesnt_exist:
             new_record.get_remote_image()
 
         filePath = None

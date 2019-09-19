@@ -105,6 +105,7 @@ def experimentFunction(request):
     # import ipdb; ipdb.set_trace()
     context = {
         "video_lists": video_list,
+        "MEDIA_URL": settings.MEDIA_URL,
         # "audioRecords":audioRecords,
         # "videos_source": videos_source,
         # "download_video_list_form": download_video_list_form,
