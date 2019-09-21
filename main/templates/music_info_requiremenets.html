@@ -1,0 +1,15 @@
+<input type="hidden" id="downloadVideoUrl" data-url="{% url 'downloadVideo' %}" />
+<input type="hidden" id="refresh_audio_info" data-url="{% url 'refresh_audio_info' %}" />
+
+
+
+  <!-- the submitted form to downalod a song -->
+  <form hidden class="" action="{% url 'downloadVideo' %}" method="POST" id="single_video_question_form">
+    {% csrf_token %}
+    <input type="text" name="question" value="" id="video_url">
+  </form>
+
+  <form hidden class="" action="{% url 'refresh_audio_info' %}" method="POST" id="refresh_audio_info_form">
+    {% csrf_token %}
+    <input type="text" name="question" value="" id="video_refresh_id">
+  </form>

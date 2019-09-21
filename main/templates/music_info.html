@@ -1,0 +1,31 @@
+<div class="row" style="margin-bottom:1%;" >
+  <div class="col-md-2">
+    <img src="{{MEDIA_URL}}{{song.image_file.name}}" class="d-block w-100 img-fluid img-max-width" alt="">
+  </div>
+
+  <div class="col-md-6">
+    <a href="{% url 'audio_page' song.id%}"  class="d-flex align-items-center" style="height:100%" >{{song.title}}</a>
+  </div>
+
+  <div class="col-md-2">
+
+    {% if song.file.name != ''%}
+
+      <!-- <input hidden type="text" name="audio_id" value="{{song.id}}"> -->
+      <div class="d-flex align-items-center" style=" height:100%"  name="buttons_div">
+      <i class="fas fa-video" onclick="location.href='#'; height:100% ; padding-left:5%;" style="cursor: pointer;"></i>
+
+    {% else %}
+
+      <!-- <input hidden type="text" name="question" value="{{song.url}}"> -->
+      <div class="d-flex align-items-center" style="height:100%" name="buttons_div">
+      <button type="submit" name="{{song.url}}" value="download" style="margin-left:5%;" ><i class="fas fa-cloud-download-alt"></i></button>
+
+    {% endif %}
+
+    <button type="submit" value="refresh" name="{{song.id}}" style="margin-left:5%;"  ><i class="fas fa-redo-alt"></i></button>
+      </div>
+      <!-- end of "buttons_div" div -->
+  </div>
+
+</div>

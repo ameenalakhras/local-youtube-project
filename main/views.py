@@ -72,7 +72,18 @@ def downloadVideo(request):
         YoutubeDlOptions = getYoutubeDlOptions()
 
         with youtube_dl.YoutubeDL(YoutubeDlOptions) as ydl:
-            extractedVideoData = ydl.extract_info(videoURL, download=True)
+            try:
+                extractedVideoData = ydl.extract_info(videoURL, download=True)
+            except DownloadError as e:
+                response = JsonResponse({
+                        "answer": {
+                            "message": "couldn't download the video, please try again later"
+                        },
+                    })
+                response.status_code = 403
+                return response
+
+
 
         new_record, filePath = createRecord(extractedVideoData)
         new_record.file.name = filePath

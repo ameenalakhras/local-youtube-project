@@ -6,21 +6,31 @@
 
 {% block content %}
 
-  <div class="container-fluid">
-    <br>
-    <div class="row">
-      {% for record in audioRecords %}
-      <div class="col-md-4">
-        <!-- width='50%' height='40%' -->
-        <!-- <p class="row "> -->
-          <center>{{record.title}}</center>
-        <!-- </p> -->
-        <video name='demo' controls width='100%' height='80%' poster="{{MEDIA_URL}}{{record.image_file.name}}">
-          <source src="{{MEDIA_URL}}{{record.file}}" type="video/mp4"></source>
-        </video>
+
+
+{% include 'music_info_requiremenets.html' %}
+
+<div class="container">
+
+    <form class="" action="{% url 'downloadVideo' %}" style="cursor: pointer;" method="POST" id="download_video">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="card card-body">
+
+          {% for song in audioRecords %}
+
+            {% include 'music_info.html' %}
+
+          {% endfor %}
+
+        </div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
+
+    </form>
+
+  {% include 'music_info_js.html' %}
+
+</div>
 
 {% endblock %}

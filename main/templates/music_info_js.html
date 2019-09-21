@@ -1,0 +1,69 @@
+<script type="text/javascript">
+  let download_video_form = $("#download_video");
+  var single_video_form = $('#single_video_question_form');
+  var refresh_audio_info_form = $("#refresh_audio_info_form");
+
+  // var s;
+  // var n;
+  download_video_form.submit(function (e) {
+
+    e.preventDefault();
+    clicked_button = document.activeElement;
+    if (clicked_button.value == "download"){
+
+      video_url = clicked_button.name;
+      $('#video_url').attr('value', video_url);
+      single_video_form.submit();
+    }
+    else{
+      video_id = clicked_button.name;
+      $('#video_refresh_id').attr('value', video_id);
+      refresh_audio_info_form.submit();
+    }
+
+  });
+
+  single_video_form.submit(function (e) {
+    e.preventDefault();
+    let url = $("#downloadVideoUrl").attr("data-url");
+
+    notify("download started ...", true);
+    console.log(single_video_form.serialize())
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: single_video_form.serialize(),
+        success: function (data) {
+          notify(data["answer"], true)
+        },
+        error: function (data) {
+            notify('An error occurred :' + data.message, false);
+            console.log('An error occurred :' + data.message);
+            console.log(data);
+        },
+    });
+  });
+
+  refresh_audio_info_form.submit(function (e) {
+    e.preventDefault();
+    let url = $("#refresh_audio_info").attr("data-url");
+
+    notify("download started ...", true);
+    console.log(refresh_audio_info_form.serialize())
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: refresh_audio_info_form.serialize(),
+        success: function (data) {
+          notify(data["answer"], true)
+        },
+        error: function (data) {
+            notify('An error occurred :' + data.message, false);
+            console.log('An error occurred :' + data.message);
+            console.log(data);
+        },
+    });
+  });
+</script>
