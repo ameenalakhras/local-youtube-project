@@ -13,3 +13,70 @@
     {% csrf_token %}
     <input type="text" name="question" value="" id="video_refresh_id">
   </form>
+
+
+  <!-- Button trigger modal -->
+  <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+    Launch demo modal
+  </button> -->
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <video  id="videoPlayer" controls autoplay  width='100%' height='80%' poster="{{thumbnail_urls.0}}">
+            <source src="{{videos_source.0}}" type="video/mp4"></source>
+          </video>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <script type="text/javascript">
+    player_modal = $('#exampleModal')
+    player_modal_title = document.getElementById("exampleModalLabel");
+    videos_source_list = {{ videos_source|safe }};
+    thumbnail_urls = {{ thumbnail_urls|safe }};
+    titles = {{ titles|safe }};
+
+    videos_length =  videos_source_list.length;
+    last_index = videos_length - 1;
+    first_index = 0;
+    video_player = document.getElementById("videoPlayer");
+    current_index = 0;
+
+
+    function add_video_source_index(index){
+        video_player.src= videos_source_list[index];
+    }
+    
+    function add_video_title(index){
+        player_modal_title.innerHTML = titles[index];
+    }
+
+    function add_video_thumbnail(index){
+        video_player.poster = thumbnail_urls[index];
+    }
+
+    function raise_model(){
+        player_modal.modal()
+    }
+
+    function play_song_from_thumbnail_image(index){
+        raise_model();
+        add_video_source_index(index);
+        add_video_title(index);
+        add_video_thumbnail(index);
+    }
+
+  </script>

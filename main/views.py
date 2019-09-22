@@ -95,9 +95,17 @@ def downloadVideo(request):
 
 def browseVideos(request):
     audioRecords = Audio.objects.all()
+
+    videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
+    thumbnail_urls = [(settings.MEDIA_URL + (record.image_file.name or ""))  for record in  audioRecords]
+    titles = [record.title for record in  audioRecords]
+
     context = {
         "audioRecords":audioRecords,
         "MEDIA_URL": settings.MEDIA_URL,
+        "thumbnail_urls":thumbnail_urls,
+        "titles":titles,
+        "videos_source": videos_source,
     }
     return render(request, template_name="browseVideos.html" ,context=context )
 

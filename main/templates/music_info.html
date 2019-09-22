@@ -1,10 +1,11 @@
 <div class="row" style="margin-bottom:1%;" >
   <div class="col-md-2">
-    <img src="{{MEDIA_URL}}{{song.image_file.name}}" class="d-block w-100 img-fluid img-max-width" alt="">
+
+    <img src="{{MEDIA_URL}}{{song.image_file.name}}" class="d-block w-100 img-fluid img-max-width" onclick="play_song_from_thumbnail_image({{forloop.counter0}})" alt="video thumbnail">
   </div>
 
   <div class="col-md-6">
-    <a href="{% url 'audio_page' song.id%}"  class="d-flex align-items-center" style="height:100%" >{{song.title}}</a>
+    <a onclick="play_song_from_thumbnail_image({{forloop.counter0}})"  class="d-flex align-items-center" style="height:100%" >{{song.title}}</a>
   </div>
 
   <div class="col-md-2">
