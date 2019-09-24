@@ -112,25 +112,36 @@ def browseVideos(request):
 
 def experimentFunction(request):
     """ this function is for site experimntation and for feature preperations """
-    video_list = VideoList.objects.all()
+    video_lists = VideoList.objects.all()
+    # empty_audio_query = Audio.objects.filter(id=-1)
+    # import ipdb; ipdb.set_trace()
+    # audioRecords = empty_audio_query
 
+    # all_videos_sources = []
+    # all_thumbnail_urls = []
+    # all_titles = []
 
-    # audioRecords = Audio.objects.all()
-    # videos_source = [(settings.MEDIA_URL + record.file.name) for record in  audioRecords]
-    # download_video_list_form = DownloadVideoListForm()
+    # for video_list in video_lists:
+    #     # appends the "video_list" videos to "all_videos"
+    #     audioRecords = video_list.videos.all()
+    #
+    #     for record in audioRecords:
+    #         all_videos_sources.append(settings.MEDIA_URL + record.file.name)
+    #         all_thumbnail_urls.append(settings.MEDIA_URL + (record.image_file.name or ""))
+    #         all_titles.append(record.title)
 
 
     # playlistOptions()
     # import ipdb; ipdb.set_trace()
     context = {
-        "video_lists": video_list,
-        "MEDIA_URL": settings.MEDIA_URL,
-        # "audioRecords":audioRecords,
-        # "videos_source": videos_source,
-        # "download_video_list_form": download_video_list_form,
+        "video_lists": video_lists,
+        # "MEDIA_URL": settings.MEDIA_URL,
+        # "thumbnail_urls":all_thumbnail_urls,
+        # "titles":all_titles,
+        # "videos_source": all_videos_sources,
 
     }
-    return render(request, template_name="experimentPage.html" ,context=context )
+    return render(request, template_name="videosLists.html" ,context=context )
 
 
 @require_http_methods(["POST"])

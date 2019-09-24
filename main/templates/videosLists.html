@@ -1,0 +1,46 @@
+
+{% extends "base.html" %}
+{% load static%}
+
+{% block title %}videos lists{% endblock %}
+
+{% block content %}
+
+{% include 'music_info_requiremenets.html' %}
+
+<div class="container">
+
+    <form class="" action="{% url 'downloadVideo' %}" style="cursor: pointer;" method="POST" id="download_video">
+      {% csrf_token %}
+
+    {% for list in video_lists%}
+
+        <div class="row">
+
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse{{list.id}}" aria-expanded="false" aria-controls="collapseExample">
+            {{list.title}} list
+          </button>
+
+          <div class="collapse" id="collapse{{list.id}}" style="width:100%">
+            <div class="card card-body">
+
+              {% for song in list.videos.all %}
+
+                {% include 'music_info.html' %}
+
+              {% endfor %}
+
+            </div>
+          </div>
+
+        </div>
+
+    {% endfor %}
+
+  </form>
+
+  {% include 'music_info_js.html' %}
+
+
+</div>
+{% endblock %}
