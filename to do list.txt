@@ -1,0 +1,80 @@
+- save every single error that might pop up in the logger (in a txt file) with
+the info in that moment ( the time, the name of the file, the request kind, etc.)
+- some file like the file (/media/Youtube/1yHsB4NDIhg.webm) is corrupted at (1.52)
+so i need to make a re-download for the currupted files
+- add the youtube channel name (as a foreign key) to the dataBase (https://github.com/ytdl-org/youtube-dl/issues/1914)
+the URL should help
+- change browseVideos html page from a video streaming to showing the title and the image
+of the song and when the image or the title or (the "play" button) is clicked it plays
+the video in a pop-up
+- add a list similar to "the new browseVideos html page (after the last to-do point)" in the green area at the main page
+- put a fix to this error :
+  [19/Sep/2019 12:58:21] "GET /media/images/Youtube/bNuCNZK-r5A.jpg HTTP/1.1" 304 0
+  False
+  Done downloading, now converting ...
+  Done downloading, now converting ...
+  ERROR: file:/home/amin/Desktop/git-files/local-youtube-project/staticfiles/media/Youtube/O_sfIM0Y9mA.f137.mp4: Not yet implemented in FFmpeg, patches welcome
+  Internal Server Error: /downloadVideo
+  Traceback (most recent call last):
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 2056, in post_process
+      files_to_delete, info = pp.run(info)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/postprocessor/ffmpeg.py", line 512, in run
+      self.run_ffmpeg_multiple_files(info['__files_to_merge'], temp_filename, args)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/postprocessor/ffmpeg.py", line 235, in run_ffmpeg_multiple_files
+      raise FFmpegPostProcessorError(msg)
+  youtube_dl.postprocessor.ffmpeg.FFmpegPostProcessorError: file:/home/amin/Desktop/git-files/local-youtube-project/staticfiles/media/Youtube/O_sfIM0Y9mA.f137.mp4: Not yet implemented in FFmpeg, patches welcome
+
+  During handling of the above exception, another exception occurred:
+
+  Traceback (most recent call last):
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/django/core/handlers/exception.py", line 34, in inner
+      response = get_response(request)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/django/core/handlers/base.py", line 115, in _get_response
+      response = self.process_exception_by_middleware(e, request)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/django/core/handlers/base.py", line 113, in _get_response
+      response = wrapped_callback(request, *callback_args, **callback_kwargs)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/django/views/decorators/http.py", line 40, in inner
+      return func(request, *args, **kwargs)
+    File "/home/amin/Desktop/git-files/local-youtube-project/main/views.py", line 75, in downloadVideo
+      extractedVideoData = ydl.extract_info(videoURL, download=True)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 807, in extract_info
+      return self.process_ie_result(ie_result, download, extra_info)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 861, in process_ie_result
+      return self.process_video_result(ie_result, download=download)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 1642, in process_video_result
+      self.process_info(new_info)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 1991, in process_info
+      self.post_process(filename, info_dict)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 2058, in post_process
+      self.report_error(e.msg)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 624, in report_error
+      self.trouble(error_message, tb)
+    File "/home/amin/Desktop/git-files/local-youtube-project/venv/lib/python3.6/site-packages/youtube_dl/YoutubeDL.py", line 594, in trouble
+      raise DownloadError(message, exc_info)
+  youtube_dl.utils.DownloadError: ERROR: file:/home/amin/Desktop/git-files/local-youtube-project/staticfiles/media/Youtube/O_sfIM0Y9mA.f137.mp4: Not yet implemented in FFmpeg, patches welcome
+  [19/Sep/2019 12:58:34] "POST /downloadVideo HTTP/1.1" 500 21083
+- update playlist
+- add sort by in browseVideos.html
+- limit browseVideos.html videos to 100 and add a button for adding another 100 and so on at the end of the page
+- add settings beside "log out" at the drop-down menu (and link it to the settings page )
+- when a video is clicked in the browseVideos.html the video will play in a pop-up above the origional page
+- add video re-download button
+- make "search videos" at the navbar working (do a page for it)
+- when a video is downloaded or its info is updated add a notification (in the notifications
+dropdown at the navbar) that "the video (video_name) has been downloaded"
+- add in the settings page an option to start and end the downloads at certain times
+- let the website download a copy of the song in "mp3" format
+- restructure the staticfiles media saving (for saving a video) to be staticfiles/media/Youtube/song_name/video/video_name.mp4
+  the structure will be after the song_name > [video, mp3, image]
+- add an option to download (not downloaded before) songs [i will use this feature for saving music to my phone]
+- make all videos download in mp4 (not mkv or webm) as hard as possible (if it's not possible convert (mkv or webm) to mp4 after the download finishes)
+- add tests to the pages, the requests and saving to the database.
+- make the mp3 player to play but when it moves the data it moves it by json or something like that (like anghami) so the mp3 file can't be stolen easily
+- when the player is playing on the modal (when the modal is exited) the music will keep going and "a playing icon" will be at the top
+of the song that's playing, when its clicked the video doesn't start all over again but it continues the song as if the modal never closed.
+- in the modal that's showing the music, beside the (x) button at the corner put (-) button to minimize the modal and when it's clicked a bar
+appears at the bottom of the page with the song name and the time of the play and when the (>) button on it is clicked it rises the modal again,
+when the (x) button is clicked on the modal the song will stop playing and the modal will exit
+- save all of the requested records with their time / when a new record is requested by a post request the
+last played video(the one that was just played) will be sent as well with the played time(spent time on video),
+the start time, end time, the time that the video stopped at. (this will be done for applying data science in the future)
