@@ -254,8 +254,8 @@
               notify(data["answer"], true)
             },
             error: function (data) {
-                notify('An error occurred :' + data.message, false);
-                console.log('An error occurred :' + data.message);
+                notify('An error occurred: ' + data.responseJSON.answer.message, false);
+                console.log('An error occurred :' + data.responseJSON.answer.message);
                 console.log(data);
             },
         });

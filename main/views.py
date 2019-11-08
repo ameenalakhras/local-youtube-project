@@ -75,11 +75,20 @@ def downloadVideo(request):
             try:
                 extractedVideoData = ydl.extract_info(videoURL, download=True)
             except DownloadError as e:
-                response = JsonResponse({
-                        "answer": {
-                            "message": "couldn't download the video, please try again later"
-                        },
-                    })
+                error_message = e.exc_info[1].args[0]
+                # if thedownload error is :video isn't available
+                if  error_message == "This video is not available.\nSorry about that.":
+                    response = JsonResponse({
+                            "answer": {
+                                "message": "couldn't download the video, please try again later"
+                            },
+                        })
+                else:
+                    response = JsonResponse({
+                            "answer": {
+                                "message": "a download error just happened"
+                            },
+                        })
                 response.status_code = 403
                 return response
 
@@ -155,13 +164,17 @@ def downloadVideoList(request):
 
 
     YoutubeDlOptions = playlistOptions()
-
-    with youtube_dl.YoutubeDL({"dump_single_json": True,
-                            "j":True}) as ydl:
+    #  "ignoreerrors": is to ignore the unavailable videos in a playlist
+    with youtube_dl.YoutubeDL({"dump_single_json": True, "j":True,
+                               "ignoreerrors": True}) as ydl:
         try:
             extractedVideosListData = ydl.extract_info(listURL, download=False)
         except DownloadError as e :
-            response = JsonResponse({"answer":"couldn't download the list, maybe it's not a public playlist !",})
+            response = JsonResponse({
+                    "answer": {
+                        "message":"couldn't download the list, maybe it's not a public playlist !"
+                    },
+                })
             response.status_code = 403
             return response
 
@@ -177,6 +190,9 @@ def downloadVideoList(request):
     error_messages = []
     savingReportMessages = []
     for extractedVideoData in extractedVideosListData["entries"]:
+        # if an error happened earlier(on one of the records) and the entry is empty
+        if extractedVideoData == None:
+            continue
         origional_url = get_video_url_from_link(extractedVideoData["id"])
 
         new_record, _ = createRecord(extractedVideoData, save=False)

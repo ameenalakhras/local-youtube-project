@@ -78,3 +78,5 @@ when the (x) button is clicked on the modal the song will stop playing and the m
 - save all of the requested records with their time / when a new record is requested by a post request the
 last played video(the one that was just played) will be sent as well with the played time(spent time on video),
 the start time, end time, the time that the video stopped at. (this will be done for applying data science in the future)
+- when there is a video that's not available in the country or something like that in a list, it souldn't stop the download of the whole list because of
+the exception, at the same time when the whole playlist is a private playlist it should output a message that it's a private playlist 
