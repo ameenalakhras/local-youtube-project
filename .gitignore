@@ -21,3 +21,4 @@ main/CustomtemplateFilters.py
 .idea/
 main/migrations/*
 staticfiles/static/
+.env

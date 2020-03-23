@@ -11,9 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from configparser import RawConfigParser
-config = RawConfigParser()
-config.read('youtubeService/settings.ini')
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.get('django_project', 'SECRET_KEY')
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY"),
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,8 +94,12 @@ WSGI_APPLICATION = 'youtubeService.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("GLOBAL_POSTGRES_DB"),
+        'USER': os.getenv("GLOBAL_POSTGRES_USER"),
+        'PASSWORD': os.getenv("GLOBAL_POSTGRES_PASSWORD"),
+        'HOST': os.getenv("GLOBAL_POSTGRES_HOST"),
+        'PORT': os.getenv("GLOBAL_POSTGRES_PORT"),
     }
 }
 
@@ -220,15 +222,15 @@ STATICFILES_DIRS = (
 
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+# EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+#
+#
+# SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
+# DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
 
-
-SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
-DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
-
-S3_BUCKET = config.get('aws', 'S3_BUCKET')
-S3_KEY = config.get('aws', 'S3_KEY')
-S3_SECRET_ACCESS_KEY = config.get('aws', 'S3_SECRET_ACCESS_KEY')
+S3_BUCKET =  os.getenv("AWS_S3_BUCKET")
+S3_KEY =  os.getenv("AWS_S3_KEY")
+S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
 
 # CELERY_BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
