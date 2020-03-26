@@ -12,33 +12,73 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+WEBSITE_NAME = "local-youtube-service"
+# the name for the directory that the settings.py file is in
+PROJECT_MAIN_APP_NAME="youtubeService"
+# AUTH_USER_MODEL = "authentication.User"
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+WEBSITE_GLOBAL_URL = f'{WEBSITE_NAME}.herokuapp.com'
+
+# it can be "cmd" or "file"
+logging_type =  os.getenv("LOGGING_TYPE")
+
+# global or local
+database_status = os.getenv("DATABASE_STATUS")
+# global or local
+server_status = os.getenv("SERVER_STATUS")
+
+# convert string to boolean
+USE_S3 = (os.getenv("USE_S3") == "True")
+USE_AWS_FOR_OFFLINE_USAGE = (os.getenv("USE_AWS_FOR_OFFLINE_USAGE") == "True")
+DEBUG = (os.getenv("DEBUG") == "True")
+
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
+if server_status == "local":
+    ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0"]
+    if database_status == "local":
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv("POSTGRES_DB"),
+                'USER': os.getenv("POSTGRES_USER"),
+                'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+                'HOST': os.getenv("POSTGRES_HOST"),
+                'PORT': os.getenv("POSTGRES_PORT"),
+            }
+        }
+    elif database_status == "global":
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv("GLOBAL_POSTGRES_DB"),
+                'USER': os.getenv("GLOBAL_POSTGRES_USER"),
+                'PASSWORD': os.getenv("GLOBAL_POSTGRES_PASSWORD"),
+                'HOST': os.getenv("GLOBAL_POSTGRES_HOST"),
+                'PORT': os.getenv("GLOBAL_POSTGRES_PORT"),
+            }
+        }
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY"),
+    else:
+        raise ValueError("database_status is not recognized.(try to use global or  local ")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-website_name=" youtube-service"
-logging_type = None # it can be "cmd" or "file"
+elif server_status == "global":
+    ALLOWED_HOSTS = ['*']
+    if database_status == "global":
+        DATABASES={}
+        DATABASES['default'] = dj_database_url.config()
+    else:
+        raise("The website can't run a dev(local) database on a global server")
 
-ALLOWED_HOSTS = [
-    'localhost',
-    "127.0.0.1",
-     "0.0.0.0",
-     "{}.herokuapp.com".format(website_name),
-     "herokuapp.com",
-     "https://{}.herokuapp.com/".format(website_name),
-     "https://herokuapp.com/",
-     ".herokuapp.com"
-]
+else:
+    raise ValueError("server_status is not recognized.(try to use global or  local ")
 
 # Application definition
 
@@ -49,6 +89,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'storages',
+
     "page404.apps.Page404Config",
     "logAuthentication.apps.LogauthenticationConfig",
     "main.apps.MainConfig",
@@ -68,7 +111,7 @@ MIDDLEWARE = [
 
 ]
 
-ROOT_URLCONF = 'youtubeService.urls'
+ROOT_URLCONF = f'{PROJECT_MAIN_APP_NAME}.urls'
 
 TEMPLATES = [
     {
@@ -86,22 +129,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'youtubeService.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("GLOBAL_POSTGRES_DB"),
-        'USER': os.getenv("GLOBAL_POSTGRES_USER"),
-        'PASSWORD': os.getenv("GLOBAL_POSTGRES_PASSWORD"),
-        'HOST': os.getenv("GLOBAL_POSTGRES_HOST"),
-        'PORT': os.getenv("GLOBAL_POSTGRES_PORT"),
-    }
-}
+WSGI_APPLICATION = f'{PROJECT_MAIN_APP_NAME}.wsgi.application'
 
 
 # Password validation
@@ -202,25 +230,19 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# print(BASE_DIR)
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# STATIC_URL = '/static/'
-
-# Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
-    os.path.join(STATIC_ROOT, 'static'),
-)
-
-MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#
+# # Extra places for collectstatic to find static files.
+# STATICFILES_DIRS = (
+#     os.path.join(STATIC_ROOT, 'static'),
+# )
+#
+# MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 
 # EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 #
@@ -228,9 +250,48 @@ MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 # SENDGRID_API_KEY = config.get('email', 'SENDGRID_API_KEY')
 # DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
 
-S3_BUCKET =  os.getenv("AWS_S3_BUCKET")
-S3_KEY =  os.getenv("AWS_S3_KEY")
-S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
+# aws s3 settings
+if USE_S3:
+    # aws settings
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    # s3 static settings
+    AWS_LOCATION = 'static'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+else:
+
+    if USE_AWS_FOR_OFFLINE_USAGE:
+
+        AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+        AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+        AWS_DEFAULT_ACL = 'public-read'
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+        AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+        # s3 static settings
+        STATIC_LOCATION = 'static'
+        STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
+        STATICFILES_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.StaticStorage'
+        # s3 public media settings
+        PUBLIC_MEDIA_LOCATION = 'media'
+        MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/'
+        DEFAULT_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PublicMediaStorage'
+        # s3 private media settings
+        PRIVATE_MEDIA_LOCATION = 'private'
+        PRIVATE_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PrivateMediaStorage'
+    else:
+        STATIC_URL = '/static/'
+        STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+        MEDIA_URL = '/mediafiles/'
+        MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
+
 
 # CELERY_BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
