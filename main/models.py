@@ -21,8 +21,8 @@ class Audio(models.Model):
     age_limit = models.CharField(max_length=100)
     created_date = models.DateTimeField(auto_now=True)
     last_download_date = models.DateTimeField(auto_now=True)
-    file = models.FileField(upload_to='{}'.format(settings.MEDIA_ROOT[1:]),null=True)
-    image_file = models.ImageField(upload_to='{}'.format("images/"),null=True, blank=True)
+    file = models.FileField(upload_to='{}'.format(settings.MEDIA_ROOT[1:]),null=True, max_length=1000)
+    image_file = models.ImageField(upload_to='{}'.format("images/"),null=True, blank=True, max_length=1000)
     image_url = models.URLField(null=True)
 
     def __str__(self):

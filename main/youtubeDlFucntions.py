@@ -12,13 +12,14 @@ from moviepy.editor import *
 
 def combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name):
 
-    videoclip = VideoFileClip(folderPath+video_file)
-    audioclip = AudioFileClip(folderPath+audio_file)
+    videoclip = VideoFileClip(video_file)
+    audioclip = AudioFileClip(audio_file)
 
     new_audioclip = CompositeAudioClip([audioclip])
     videoclip.audio = new_audioclip
 
     new_file_extention = "mp4"
+    import ipdb;ipdb.set_trace()
     new_file_path = f"{folderPath}{file_raw_name}.{new_file_extention}"
     videoclip.write_videofile(new_file_path)
 
@@ -55,7 +56,7 @@ def my_hook(d):
     if d['status'] == 'finished':
         print('Done downloading, now converting ...')
 
-    if d["status"] is "downloading":
+    if d["status"] == "downloading":
         download_status = get_download_status(d)
         print(download_status)
 
@@ -67,8 +68,8 @@ def return_fileName_and_extention(folderPath, file_raw_name):
     """
     pattern_match_files = glob.glob(f"{folderPath}{file_raw_name}.*")
 
-    file_empty = len(pattern_match_files) is 0
-    file_exists = len(pattern_match_files) is 1
+    file_empty = len(pattern_match_files) == 0
+    file_exists = len(pattern_match_files) == 1
     file_duplicated = len(pattern_match_files) > 1
 
     if file_empty:
@@ -81,14 +82,14 @@ def return_fileName_and_extention(folderPath, file_raw_name):
         first_file = pattern_match_files[0]
         second_file = pattern_match_files[1]
 
-        if firstfile.endswith(".mp4"):
-            video_file = firstfile
+        if first_file.endswith(".mp4"):
+            video_file = first_file
             audio_file = second_file
         else:
             video_file = second_file
             audio_file = first_file
 
-        file_name, file_extention = combineVideoAndAudio(folderPath, video_file,audio_file, file_raw_name)
+        file_name, file_extention = combineVideoAndAudio(folderPath, video_file, audio_file, file_raw_name)
 
 
     elif file_exists:
@@ -118,7 +119,7 @@ def createRecord(extracted_video_data, save=True, update_data=False):
         except:
             file_exists = False
 
-        if (file_exists is False) or (filePath is ''):
+        if (file_exists is False) or (filePath == ''):
             check = check_file_exists_and_not_connected_to_database(record = new_record)
             if check["status"] is False:
                 filePath = None
@@ -335,13 +336,13 @@ def get_video_url_from_link(text, video_id=None):
     """
 
     video_type = checkUrlType(text)
-    if video_type is "video":
+    if video_type == "video":
         video_url = text
-    elif video_type is "video_in_playlist":
+    elif video_type == "video_in_playlist":
         video_url = text.split("&list")[0]
-    elif video_type is "playlist":
+    elif video_type == "playlist":
         pass
-    elif video_type is "video_id":
+    elif video_type == "video_id":
         # the text is the video_id here
         video_url = f"https://www.youtube.com/watch?v={text}"
     else:
@@ -365,7 +366,7 @@ def check_empty_file_field(file_field):
 
     empty_file = ""
 
-    if file_field.file.name is empty_file:
+    if file_field.file.name == empty_file:
         return True
     else:
         return False

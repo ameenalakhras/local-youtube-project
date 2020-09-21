@@ -66,6 +66,14 @@ if server_status == "local":
             }
         }
 
+    elif database_status == "sqlite":
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
+
     else:
         raise ValueError("database_status is not recognized.(try to use global or  local ")
 
@@ -286,12 +294,16 @@ else:
         PRIVATE_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PrivateMediaStorage'
     else:
         STATIC_URL = '/static/'
-        STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+        if DEBUG:
+            STATICFILES_DIRS = [
+                os.path.join(BASE_DIR, 'staticfiles')
+            ]
+        else:
+            STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
         MEDIA_URL = '/mediafiles/'
         MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
-
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
 
 # CELERY_BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
